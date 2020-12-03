@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  transactionqueryservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443
+    ports:
+      - "38433:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - C:\Shares\share1:/mnt/stores/transactions:ro

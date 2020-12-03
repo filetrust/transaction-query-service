@@ -1,0 +1,1267 @@
+openapi: 3.0.0
+info:
+  title: Glasswall Transaction Event Store API
+  description: These are HTTP endpoints that query the transaction store
+  version: 0.1.9
+servers:
+  - url: https://transactionqueryservicefunction20201016103513.azurewebsites.net
+    description: Azure function
+  - url: http://localhost:32769
+    description: Local Dev HTTP
+  - url: http://localhost:32768
+    description: Local Dev HTTPS
+paths:
+  /api/v1/transactions:
+    post:
+      summary: Gets a set of transactions matching the criteria set in the request body
+      description: This endpoint accepts an input JSON body containing criteria to search for transactions.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Filter
+              properties:
+                Filter:
+                  type: object
+                  description: An object containing the filtering parameters
+                  properties:
+                    TimestampRangeStart: 
+                      type: string
+                      example: "0001-01-01T00:00:00.0000000+00:00"
+                    TimestampRangeEnd:
+                      type: string
+                      example: "9999-12-31T23:59:59.9999999+00:00"
+                    Risks:
+                      type: array
+                      example:
+                        - 0
+                        - 1
+                        - 2
+                      items:
+                        type: number
+                        description: >
+                          Each value indicates the risk of a file to filter upon:
+                          <br/><br/>* `-1` - Unknown,
+                          <br/><br/>* `0` - Blocked By Policy,
+                          <br/><br/>* `1` - Blocked By NCFS,
+                          <br/><br/>* `2` - Allowed By Policy
+                          <br/><br/>* `3` - Allowed By NCFS
+                          <br/><br/>* `4` - Safe
+                    FileTypes:
+                      type: array
+                      example:
+                        - 16
+                        - 19
+                        - 33
+                      items:
+                        type: number
+                        description: >
+                          Each value indicates a file type in the list of Glasswall supported file types to filter upon:
+                          <br/><br/>* `16` - Pdf,
+                          <br/><br/>* `17` - Doc,
+                          <br/><br/>* `18` - Docx,
+                          <br/><br/>* `19` - Ppt,
+                          <br/><br/>* `20` - Pptx,
+                          <br/><br/>* `21` - Xls,
+                          <br/><br/>* `22` - Xlsx,
+                          <br/><br/>* `23` - Png,
+                          <br/><br/>* `24` - Jpeg,
+                          <br/><br/>* `25` - Gif,
+                          <br/><br/>* `26` - Emf,
+                          <br/><br/>* `27` - Wmf,
+                          <br/><br/>* `28` - Rtf,
+                          <br/><br/>* `29` - Bmp,
+                          <br/><br/>* `30` - Tiff,
+                          <br/><br/>* `31` - Pe,
+                          <br/><br/>* `32` - Macho,
+                          <br/><br/>* `33` - Elf,
+                          <br/><br/>* `34` - Mp4,
+                          <br/><br/>* `35` - Mp3,
+                          <br/><br/>* `36` - Mp2,
+                          <br/><br/>* `37` - Wav,
+                          <br/><br/>* `38` - Mpg,
+                          <br/><br/>* `39` - Coff
+                    FileIds: 
+                      type: array
+                      example: 
+                        - deadbeef-dead-beef-dead-beeffeedbeef
+                        - 125ccda2-a6c6-4f48-adb4-fe04cd42676b
+                    PolicyIds: 
+                      type: array
+                      example: 
+                        - deadbeef-dead-beef-dead-beeffeedbeef
+                        - 125ccda2-a6c6-4f48-adb4-fe04cd42676b
+      responses:
+        200:    # status code
+          description: OK - The transactions were retrieved successfully
+          content:          
+            "application/json":
+              schema:
+                type: object
+                description: A response detailing each transaction file matched by the input filter
+                properties:
+                  Count:
+                    type: number
+                    description: Number of items in the files array
+                    example: 1
+                  Files:
+                    type: array
+                    description: An array of items each representing a transaction file in the store
+                    items:
+                      type: object
+                      description: An item representing a transaction in the store.
+                      properties:
+                        Timestamp:
+                          type: string
+                          example: "2020-01-01T00:00:00+00:00"
+                          description: Timestamp of the transaction entering the system
+                        FileId:
+                          type: string
+                          example: 0140daa9-7da3-4445-964c-e87a2e70f909
+                          description: Unique Identifier for the file
+                        Risk:
+                          type: string
+                          example: 1
+                          description: >
+                            Associated Risk of the file:
+                            <br/><br/>* `0` Unknown,
+                            <br/><br/>* `1` Safe
+                            <br/><br/>* `2` Blocked
+                            <br/><br/>* `3` Allowed
+                        ActivePolicyId:
+                          type: string
+                          description: The unique identifier for the policy used during the processing of this transaction
+                          example: a4484d16-7462-4997-bd84-c74655ac9cd2
+                        Directory:
+                          type: string
+                          description: The location in the store that the metadata was found - for use when getting analysis report
+                          example: 2021/1/1/0/0140daa9-7da3-4445-964c-e87a2e70f909
+                        DetectionFileType:
+                          type: number
+                          example: 38
+                          description: >
+                              Each value indicates a file type in the list of Glasswall supported file types to filter upon:
+                              <br/><br/>* `16` - Pdf,
+                              <br/><br/>* `17` - Doc,
+                              <br/><br/>* `18` - Docx,
+                              <br/><br/>* `19` - Ppt,
+                              <br/><br/>* `20` - Pptx,
+                              <br/><br/>* `21` - Xls,
+                              <br/><br/>* `22` - Xlsx,
+                              <br/><br/>* `23` - Png,
+                              <br/><br/>* `24` - Jpeg,
+                              <br/><br/>* `25` - Gif,
+                              <br/><br/>* `26` - Emf,
+                              <br/><br/>* `27` - Wmf,
+                              <br/><br/>* `28` - Rtf,
+                              <br/><br/>* `29` - Bmp,
+                              <br/><br/>* `30` - Tiff,
+                              <br/><br/>* `31` - Pe,
+                              <br/><br/>* `32` - Macho,
+                              <br/><br/>* `33` - Elf,
+                              <br/><br/>* `34` - Mp4,
+                              <br/><br/>* `35` - Mp3,
+                              <br/><br/>* `36` - Mp2,
+                              <br/><br/>* `37` - Wav,
+                              <br/><br/>* `38` - Mpg,
+                              <br/><br/>* `39` - Coff
+        400:
+          description: Bad Request - This can occur when the JSON input is malformed, missing parameters or contains invalid parameters
+        415:
+          description: Unsupported Media Type - This happens when the request was not sent in JSON.
+    get:
+      summary: "Gets the finer details for a specified transaction"
+      description: "This endpoint takes a directory path for a specified file on the transaction store and returns the details associated"
+      parameters:
+        - in: query
+          name: filePath
+          schema:
+            type: string
+          required: true
+          description: "Path to the transaction directory in the store. The structure is [Year]/[Month]/[Day]/[Hour]<br/><br/>For Example: '2021/1/1/0/0140daa9-7da3-4445-964c-e87a2e70f909'"
+          example: "2021/1/1/0/0140daa9-7da3-4445-964c-e87a2e70f909"
+      responses:
+          200:
+            description: OK - The request was successful
+            content:
+              "application/json":
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: number
+                      example: 1
+                      description: >
+                        Each value indicates a file type in the list of Glasswall supported file types to filter upon:
+                        <br/><br/>* `0` - Success,
+                        <br/><br/>* `1` - Analysis Report Not Found,
+                        <br/><br/>* `2` - File Not Found
+                    analysisReport:
+                      type: object
+                      description: An object based on the Glasswall XML Report generated by the Glasswall d-First Engine
+                  example: {
+  "status": 0,
+  "analysisReport": {
+    "documentStatistics": {
+      "documentSummary": {
+        "totalSizeInBytes": 293050,
+        "fileType": "pdf",
+        "version": "PDF-1.5"
+      },
+      "contentManagementPolicy": [
+        {
+          "contentSwitch": [
+            {
+              "contentName": "metadata",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "javascript",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "acroform",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "actions_all",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_files",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "external_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "internal_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_images",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "value_outside_reasonable_limits",
+              "contentValue": "allow"
+            }
+          ],
+          "cameraName": "pdfConfig"
+        },
+        {
+          "contentSwitch": [
+            {
+              "contentName": "metadata",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "macros",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_files",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "review_comments",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "internal_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "external_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "dynamic_data_exchange",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_images",
+              "contentValue": "sanitise"
+            }
+          ],
+          "cameraName": "wordConfig"
+        },
+        {
+          "contentSwitch": [
+            {
+              "contentName": "metadata",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "macros",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_files",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "review_comments",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "internal_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "external_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_images",
+              "contentValue": "sanitise"
+            }
+          ],
+          "cameraName": "pptConfig"
+        },
+        {
+          "contentSwitch": [
+            {
+              "contentName": "metadata",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "macros",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_files",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "internal_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "external_hyperlinks",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "review_comments",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "dynamic_data_exchange",
+              "contentValue": "sanitise"
+            },
+            {
+              "contentName": "embedded_images",
+              "contentValue": "sanitise"
+            }
+          ],
+          "cameraName": "xlsConfig"
+        },
+        {
+          "contentSwitch": [
+            {
+              "contentName": "geotiff",
+              "contentValue": "allow"
+            }
+          ],
+          "cameraName": "tiffConfig"
+        }
+      ],
+      "contentGroups": {
+        "contentGroup": [
+          {
+            "briefDescription": "PDF document has Basic File Section structure instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "PDF Cross Reference Table Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 3371,
+                  "averageSizeInBytes": 3371,
+                  "minSizeInBytes": 3371,
+                  "maxSizeInBytes": 3371
+                },
+                {
+                  "technicalDescription": "PDF Header Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 17,
+                  "averageSizeInBytes": 17,
+                  "minSizeInBytes": 17,
+                  "maxSizeInBytes": 17
+                },
+                {
+                  "technicalDescription": "PDF Object Instances",
+                  "instanceCount": 160,
+                  "totalSizeInBytes": 289526,
+                  "averageSizeInBytes": 1809,
+                  "minSizeInBytes": 42,
+                  "maxSizeInBytes": 20324
+                },
+                {
+                  "technicalDescription": "PDF StartXref Section Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 26,
+                  "averageSizeInBytes": 26,
+                  "minSizeInBytes": 26,
+                  "maxSizeInBytes": 26
+                },
+                {
+                  "technicalDescription": "PDF Trailer Section Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 108,
+                  "averageSizeInBytes": 108,
+                  "minSizeInBytes": 108,
+                  "maxSizeInBytes": 108
+                }
+              ],
+              "itemCount": 5
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Basic Object Structure instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "ARRAY",
+                  "instanceCount": 222,
+                  "totalSizeInBytes": 222,
+                  "averageSizeInBytes": 1,
+                  "minSizeInBytes": 1,
+                  "maxSizeInBytes": 1
+                },
+                {
+                  "technicalDescription": "ARRAY_end",
+                  "instanceCount": 222,
+                  "totalSizeInBytes": 222,
+                  "averageSizeInBytes": 1,
+                  "minSizeInBytes": 1,
+                  "maxSizeInBytes": 1
+                },
+                {
+                  "technicalDescription": "BOOLEAN",
+                  "instanceCount": 3,
+                  "totalSizeInBytes": 12,
+                  "averageSizeInBytes": 4,
+                  "minSizeInBytes": 4,
+                  "maxSizeInBytes": 4
+                },
+                {
+                  "technicalDescription": "DICTIONARY",
+                  "instanceCount": 255,
+                  "totalSizeInBytes": 510,
+                  "averageSizeInBytes": 2,
+                  "minSizeInBytes": 2,
+                  "maxSizeInBytes": 2
+                },
+                {
+                  "technicalDescription": "DICTIONARY_end",
+                  "instanceCount": 255,
+                  "totalSizeInBytes": 510,
+                  "averageSizeInBytes": 2,
+                  "minSizeInBytes": 2,
+                  "maxSizeInBytes": 2
+                },
+                {
+                  "technicalDescription": "NAME",
+                  "instanceCount": 1582,
+                  "totalSizeInBytes": 11798,
+                  "averageSizeInBytes": 7,
+                  "minSizeInBytes": 2,
+                  "maxSizeInBytes": 20
+                },
+                {
+                  "technicalDescription": "NUMERIC_INTEGER",
+                  "instanceCount": 547,
+                  "totalSizeInBytes": 932,
+                  "averageSizeInBytes": 1,
+                  "minSizeInBytes": 1,
+                  "maxSizeInBytes": 5
+                },
+                {
+                  "technicalDescription": "NUMERIC_REAL",
+                  "instanceCount": 544,
+                  "totalSizeInBytes": 4925,
+                  "averageSizeInBytes": 9,
+                  "minSizeInBytes": 5,
+                  "maxSizeInBytes": 11
+                },
+                {
+                  "technicalDescription": "REFERENCE",
+                  "instanceCount": 409,
+                  "totalSizeInBytes": 2614,
+                  "averageSizeInBytes": 6,
+                  "minSizeInBytes": 5,
+                  "maxSizeInBytes": 7
+                },
+                {
+                  "technicalDescription": "STREAM",
+                  "instanceCount": 52,
+                  "totalSizeInBytes": 260128,
+                  "averageSizeInBytes": 5002,
+                  "minSizeInBytes": 65,
+                  "maxSizeInBytes": 20240
+                },
+                {
+                  "technicalDescription": "STREAM_end",
+                  "instanceCount": 52,
+                  "totalSizeInBytes": 468,
+                  "averageSizeInBytes": 9,
+                  "minSizeInBytes": 9,
+                  "maxSizeInBytes": 9
+                },
+                {
+                  "technicalDescription": "STRING_HEX",
+                  "instanceCount": 2,
+                  "totalSizeInBytes": 68,
+                  "averageSizeInBytes": 34,
+                  "minSizeInBytes": 34,
+                  "maxSizeInBytes": 34
+                },
+                {
+                  "technicalDescription": "STRING_LITERAL",
+                  "instanceCount": 30,
+                  "totalSizeInBytes": 255,
+                  "averageSizeInBytes": 8,
+                  "minSizeInBytes": 7,
+                  "maxSizeInBytes": 10
+                }
+              ],
+              "itemCount": 13
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": {
+                "technicalDescription": "Token tree instances removed.",
+                "instanceCount": 64
+              },
+              "itemCount": 1
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Content Stream Structure instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Content Stream Structure",
+                  "instanceCount": 20,
+                  "totalSizeInBytes": 71426,
+                  "averageSizeInBytes": 3571,
+                  "minSizeInBytes": 56,
+                  "maxSizeInBytes": 5896
+                }
+              ],
+              "itemCount": 1
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Indirect Object Structure instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Indirect Object",
+                  "instanceCount": 480,
+                  "totalSizeInBytes": 0,
+                  "averageSizeInBytes": 0,
+                  "minSizeInBytes": 0,
+                  "maxSizeInBytes": 0
+                }
+              ],
+              "itemCount": 1
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has embedded Huffman Filter Stream instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Embedded Huffman Filter Stream",
+                  "instanceCount": 19,
+                  "totalSizeInBytes": 71370,
+                  "averageSizeInBytes": 3756,
+                  "minSizeInBytes": 132,
+                  "maxSizeInBytes": 5896
+                }
+              ],
+              "itemCount": 1
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Standard Font Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "/Helvetica",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 383,
+                  "averageSizeInBytes": 383,
+                  "minSizeInBytes": 383,
+                  "maxSizeInBytes": 383
+                },
+                {
+                  "technicalDescription": "CID Font Array Instances",
+                  "instanceCount": 15,
+                  "totalSizeInBytes": 5859,
+                  "averageSizeInBytes": 390,
+                  "minSizeInBytes": 212,
+                  "maxSizeInBytes": 1015
+                },
+                {
+                  "technicalDescription": "CID Font Instances",
+                  "instanceCount": 15,
+                  "totalSizeInBytes": 5859,
+                  "averageSizeInBytes": 390,
+                  "minSizeInBytes": 212,
+                  "maxSizeInBytes": 1015
+                },
+                {
+                  "technicalDescription": "Direct Font Instances",
+                  "instanceCount": 31,
+                  "totalSizeInBytes": 8268,
+                  "averageSizeInBytes": 266,
+                  "minSizeInBytes": 130,
+                  "maxSizeInBytes": 1015
+                },
+                {
+                  "technicalDescription": "Font Array Instances",
+                  "instanceCount": 15,
+                  "totalSizeInBytes": 2026,
+                  "averageSizeInBytes": 135,
+                  "minSizeInBytes": 130,
+                  "maxSizeInBytes": 142
+                },
+                {
+                  "technicalDescription": "Type 0 Font Instances",
+                  "instanceCount": 15,
+                  "totalSizeInBytes": 2026,
+                  "averageSizeInBytes": 135,
+                  "minSizeInBytes": 130,
+                  "maxSizeInBytes": 142
+                },
+                {
+                  "technicalDescription": "Type 1 Font Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 383,
+                  "averageSizeInBytes": 383,
+                  "minSizeInBytes": 383,
+                  "maxSizeInBytes": 383
+                }
+              ],
+              "itemCount": 7
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Resource Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Inheritable Resource Instances",
+                  "instanceCount": 24,
+                  "totalSizeInBytes": 6493,
+                  "averageSizeInBytes": 270,
+                  "minSizeInBytes": 71,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Inherited Resource Array Element Instances",
+                  "instanceCount": 237,
+                  "totalSizeInBytes": 74362,
+                  "averageSizeInBytes": 313,
+                  "minSizeInBytes": 179,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Resource Dictionary Instances",
+                  "instanceCount": 20,
+                  "totalSizeInBytes": 6107,
+                  "averageSizeInBytes": 305,
+                  "minSizeInBytes": 179,
+                  "maxSizeInBytes": 517
+                }
+              ],
+              "itemCount": 3
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Graphic Content Stream Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Content Page or Form XObject Instances",
+                  "instanceCount": 19,
+                  "totalSizeInBytes": 5724,
+                  "averageSizeInBytes": 301,
+                  "minSizeInBytes": 179,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Content Stream Instances",
+                  "instanceCount": 20,
+                  "totalSizeInBytes": 73101,
+                  "averageSizeInBytes": 3655,
+                  "minSizeInBytes": 202,
+                  "maxSizeInBytes": 5967
+                },
+                {
+                  "technicalDescription": "Content Stream Operator Instances",
+                  "instanceCount": 54905,
+                  "totalSizeInBytes": 107715,
+                  "averageSizeInBytes": 1,
+                  "minSizeInBytes": 1,
+                  "maxSizeInBytes": 2
+                }
+              ],
+              "itemCount": 3
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Page Tree Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Page Object Parent Instances",
+                  "instanceCount": 19,
+                  "totalSizeInBytes": 125,
+                  "averageSizeInBytes": 6,
+                  "minSizeInBytes": 6,
+                  "maxSizeInBytes": 7
+                },
+                {
+                  "technicalDescription": "Page Tree Instances",
+                  "instanceCount": 23,
+                  "totalSizeInBytes": 46,
+                  "averageSizeInBytes": 2,
+                  "minSizeInBytes": 2,
+                  "maxSizeInBytes": 2
+                },
+                {
+                  "technicalDescription": "Page Tree Kids Array Instances",
+                  "instanceCount": 4,
+                  "totalSizeInBytes": 386,
+                  "averageSizeInBytes": 96,
+                  "minSizeInBytes": 71,
+                  "maxSizeInBytes": 118
+                },
+                {
+                  "technicalDescription": "Page Tree Node Instances",
+                  "instanceCount": 4,
+                  "totalSizeInBytes": 386,
+                  "averageSizeInBytes": 96,
+                  "minSizeInBytes": 71,
+                  "maxSizeInBytes": 118
+                }
+              ],
+              "itemCount": 4
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": {
+                "technicalDescription": " Items in a Pages dictionary Kids array must be valid Page or Pages dictionaries.",
+                "issueId": 186451589,
+                "instanceCount": 2,
+                "riskLevel": "Medium"
+              },
+              "itemCount": 1
+            }
+          },
+          {
+            "briefDescription": "PDF document has Annotations Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Annotation Array Instances",
+                  "instanceCount": 3,
+                  "totalSizeInBytes": 1197,
+                  "averageSizeInBytes": 399,
+                  "minSizeInBytes": 322,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Annotation Border Instances",
+                  "instanceCount": 34,
+                  "totalSizeInBytes": 4685,
+                  "averageSizeInBytes": 137,
+                  "minSizeInBytes": 116,
+                  "maxSizeInBytes": 141
+                },
+                {
+                  "technicalDescription": "Annotation Common Field Instances",
+                  "instanceCount": 34,
+                  "totalSizeInBytes": 4685,
+                  "averageSizeInBytes": 137,
+                  "minSizeInBytes": 116,
+                  "maxSizeInBytes": 141
+                },
+                {
+                  "technicalDescription": "Annotation Dictionary Instances",
+                  "instanceCount": 34,
+                  "totalSizeInBytes": 17224,
+                  "averageSizeInBytes": 506,
+                  "minSizeInBytes": 322,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Link Annotation Dictionary Instances",
+                  "instanceCount": 34,
+                  "totalSizeInBytes": 4685,
+                  "averageSizeInBytes": 137,
+                  "minSizeInBytes": 116,
+                  "maxSizeInBytes": 141
+                }
+              ],
+              "itemCount": 5
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": {
+                "technicalDescription": "Destination of link annotation object forbidden by content management policy - annotation removed.",
+                "instanceCount": 33
+              },
+              "itemCount": 1
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Colour Space Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Colour Space Instances",
+                  "instanceCount": 2,
+                  "totalSizeInBytes": 14351,
+                  "averageSizeInBytes": 7175,
+                  "minSizeInBytes": 6363,
+                  "maxSizeInBytes": 7988
+                },
+                {
+                  "technicalDescription": "Direct Colour Space Instances",
+                  "instanceCount": 2,
+                  "totalSizeInBytes": 14351,
+                  "averageSizeInBytes": 7175,
+                  "minSizeInBytes": 6363,
+                  "maxSizeInBytes": 7988
+                }
+              ],
+              "itemCount": 2
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Graphic State Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Blend Mode Element Instances",
+                  "instanceCount": 4,
+                  "totalSizeInBytes": 273,
+                  "averageSizeInBytes": 68,
+                  "minSizeInBytes": 33,
+                  "maxSizeInBytes": 80
+                },
+                {
+                  "technicalDescription": "Blend Mode Instances",
+                  "instanceCount": 4,
+                  "totalSizeInBytes": 273,
+                  "averageSizeInBytes": 68,
+                  "minSizeInBytes": 33,
+                  "maxSizeInBytes": 80
+                },
+                {
+                  "technicalDescription": "Graphic State Parameter Dictionary Instances",
+                  "instanceCount": 4,
+                  "totalSizeInBytes": 273,
+                  "averageSizeInBytes": 68,
+                  "minSizeInBytes": 33,
+                  "maxSizeInBytes": 80
+                }
+              ],
+              "itemCount": 3
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Common Supporting Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "BBOX Rectangle Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 383,
+                  "averageSizeInBytes": 383,
+                  "minSizeInBytes": 383,
+                  "maxSizeInBytes": 383
+                },
+                {
+                  "technicalDescription": "Destination Array Instances",
+                  "instanceCount": 65,
+                  "totalSizeInBytes": 112450,
+                  "averageSizeInBytes": 1730,
+                  "minSizeInBytes": 1730,
+                  "maxSizeInBytes": 1730
+                },
+                {
+                  "technicalDescription": "Destination Array Page Instances",
+                  "instanceCount": 32,
+                  "totalSizeInBytes": 10012,
+                  "averageSizeInBytes": 312,
+                  "minSizeInBytes": 237,
+                  "maxSizeInBytes": 373
+                },
+                {
+                  "technicalDescription": "Destination Name Instances",
+                  "instanceCount": 33,
+                  "totalSizeInBytes": 4569,
+                  "averageSizeInBytes": 138,
+                  "minSizeInBytes": 135,
+                  "maxSizeInBytes": 141
+                },
+                {
+                  "technicalDescription": "Direct Dictionary Value",
+                  "instanceCount": 1580,
+                  "totalSizeInBytes": 8685,
+                  "averageSizeInBytes": 5,
+                  "minSizeInBytes": 1,
+                  "maxSizeInBytes": 20
+                },
+                {
+                  "technicalDescription": "Glyph Rectangle Instances",
+                  "instanceCount": 15,
+                  "totalSizeInBytes": 3499,
+                  "averageSizeInBytes": 233,
+                  "minSizeInBytes": 224,
+                  "maxSizeInBytes": 245
+                },
+                {
+                  "technicalDescription": "Group Attributes Dictionary Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 383,
+                  "averageSizeInBytes": 383,
+                  "minSizeInBytes": 383,
+                  "maxSizeInBytes": 383
+                },
+                {
+                  "technicalDescription": "Known Dictionary",
+                  "instanceCount": 247,
+                  "totalSizeInBytes": 310121,
+                  "averageSizeInBytes": 1255,
+                  "minSizeInBytes": 0,
+                  "maxSizeInBytes": 20316
+                },
+                {
+                  "technicalDescription": "Numeric Array Instances",
+                  "instanceCount": 48,
+                  "totalSizeInBytes": 29759,
+                  "averageSizeInBytes": 619,
+                  "minSizeInBytes": 212,
+                  "maxSizeInBytes": 1015
+                },
+                {
+                  "technicalDescription": "Page Rectangle Instances",
+                  "instanceCount": 53,
+                  "totalSizeInBytes": 10409,
+                  "averageSizeInBytes": 196,
+                  "minSizeInBytes": 116,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Rectangle Instances",
+                  "instanceCount": 69,
+                  "totalSizeInBytes": 14291,
+                  "averageSizeInBytes": 207,
+                  "minSizeInBytes": 116,
+                  "maxSizeInBytes": 517
+                },
+                {
+                  "technicalDescription": "Soft Mask Dictionary Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 6363,
+                  "averageSizeInBytes": 6363,
+                  "minSizeInBytes": 6363,
+                  "maxSizeInBytes": 6363
+                }
+              ],
+              "itemCount": 12
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Trailer Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "PDF Document trailer ID Array Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 0,
+                  "averageSizeInBytes": 0,
+                  "minSizeInBytes": 0,
+                  "maxSizeInBytes": 0
+                },
+                {
+                  "technicalDescription": "PDF Document trailer Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 0,
+                  "averageSizeInBytes": 0,
+                  "minSizeInBytes": 0,
+                  "maxSizeInBytes": 0
+                },
+                {
+                  "technicalDescription": "PDF Document trailer Size Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 0,
+                  "averageSizeInBytes": 0,
+                  "minSizeInBytes": 0,
+                  "maxSizeInBytes": 0
+                }
+              ],
+              "itemCount": 3
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has Catalog Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Catalog Data",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 60,
+                  "averageSizeInBytes": 60,
+                  "minSizeInBytes": 60,
+                  "maxSizeInBytes": 60
+                },
+                {
+                  "technicalDescription": "Destinations Array",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 60,
+                  "averageSizeInBytes": 60,
+                  "minSizeInBytes": 60,
+                  "maxSizeInBytes": 60
+                }
+              ],
+              "itemCount": 2
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": {
+                "technicalDescription": "The destination object was not the expected type.",
+                "instanceCount": 32
+              },
+              "itemCount": 1
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "PDF document has XObject Data Instances",
+            "contentItems": {
+              "contentItem": [
+                {
+                  "technicalDescription": "Direct Image Xobject Instances",
+                  "instanceCount": 2,
+                  "totalSizeInBytes": 14351,
+                  "averageSizeInBytes": 7175,
+                  "minSizeInBytes": 6363,
+                  "maxSizeInBytes": 7988
+                },
+                {
+                  "technicalDescription": "Form Xobject Instances",
+                  "instanceCount": 1,
+                  "totalSizeInBytes": 383,
+                  "averageSizeInBytes": 383,
+                  "minSizeInBytes": 383,
+                  "maxSizeInBytes": 383
+                },
+                {
+                  "technicalDescription": "Xobject Instances",
+                  "instanceCount": 3,
+                  "totalSizeInBytes": 6841,
+                  "averageSizeInBytes": 2280,
+                  "minSizeInBytes": 239,
+                  "maxSizeInBytes": 6363
+                }
+              ],
+              "itemCount": 3
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": null,
+              "itemCount": 0
+            }
+          },
+          {
+            "briefDescription": "Document Processing Instances",
+            "contentItems": {
+              "contentItem": null,
+              "itemCount": 0
+            },
+            "sanitisationItems": {
+              "itemCount": 0
+            },
+            "remedyItems": {
+              "remedyItem": null,
+              "itemCount": 0
+            },
+            "issueItems": {
+              "issueItem": {
+                "technicalDescription": " uninitialised software pointer found(destinationArrayPtr)",
+                "issueId": 96,
+                "instanceCount": 33,
+                "riskLevel": "Medium"
+              },
+              "itemCount": 1
+            }
+          }
+        ],
+        "groupCount": 17
+      },
+      "extractedItems": {
+        "itemCount": 0
+      }
+    }
+  }
+}

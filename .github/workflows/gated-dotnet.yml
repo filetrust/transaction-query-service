@@ -1,0 +1,27 @@
+name: Gated .net Build
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+        
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2 
+        with:
+          submodules: true
+          token: ${{ secrets.TOKEN_GITHUB }}
+      - name: Setup .NET Core 🔧
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.101
+      - name: Install dependencies 🔧
+        run: dotnet restore ./TransactionQueryService.sln
+      - name: Build 🔨
+        run: dotnet build ./TransactionQueryService.sln --configuration Release --no-restore
+      - name: Test 🧪
+        run: dotnet test ./TransactionQueryService.sln --no-restore --verbosity normal

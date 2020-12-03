@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "transactionqueryservice.fullname" . }}
+  labels:
+    app: {{ template "transactionqueryservice.name" . }}
+    chart: {{ template "transactionqueryservice.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "transactionqueryservice.name" . }}
+    release: {{ .Release.Name }}

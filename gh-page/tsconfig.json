@@ -1,0 +1,30 @@
+{
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "node_modules",
+      "**/*.spec.ts"
+    ],
+    "compilerOptions": {
+      "target": "es6",
+      "module": "esnext",
+      "jsx": "preserve",
+      "strict": true,
+      "esModuleInterop": true,
+      "strictNullChecks": false,
+      "forceConsistentCasingInFileNames": true,
+      "lib": [
+        "dom",
+        "dom.iterable",
+        "esnext"
+      ],
+      "allowJs": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "noEmit": true
+    }
+  }

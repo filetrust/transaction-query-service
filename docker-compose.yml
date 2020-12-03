@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  transactionqueryservice:
+    image: ${DOCKER_REGISTRY-}transactionqueryservice
+    build:
+      context: .
+      dockerfile: ./TransactionQueryService/Dockerfile

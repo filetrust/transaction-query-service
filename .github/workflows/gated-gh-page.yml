@@ -1,0 +1,41 @@
+name: Gated Github Page Build
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-16.04
+
+    strategy:
+      matrix:
+        node-version: [12.x]  
+        
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2 
+        with:
+          submodules: true
+          token: ${{ secrets.TOKEN_GITHUB }}
+      - name: Build
+        working-directory: gh-page
+        run: |
+          npm install
+          npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+      - name: Unit tests
+        working-directory: gh-page
+        run: |
+          npm run test
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+      - uses: cypress-io/github-action@v1
+        with:
+          browser: chrome
+          headless: true
+          working-directory: gh-page
+          start: npm start
+      - uses: actions/checkout@v1

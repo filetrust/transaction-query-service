@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Glasswall.Administration.K8.TransactionQueryService</RootNamespace>
+    <UserSecretsId>e1f6c36a-bc19-4716-be0d-95d3a003b15f</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransactionQueryService.Business\TransactionQueryService.Business.csproj" />
+    <ProjectReference Include="..\TransactionQueryService.Common\TransactionQueryService.Common.csproj" />
+  </ItemGroup>
+
+
+</Project>

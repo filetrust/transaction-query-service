@@ -1,0 +1,129 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: $modalOverlayBGColour;
+    opacity: 0;
+    transition: all 0.5s;
+    z-index: z(modal);
+  }
+  
+  .modal-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -20%);
+    width: $modalContainerWidth;
+    height: 56vh;
+    max-width: $modalContainerMaxWidth;
+    min-height: $modalContainerMinHeight;
+    overflow: hidden;
+    background-color: $modalBackgroundColor;
+    border-radius: $borderRadius1;
+    box-shadow: $boxShadow1;
+    transition: opacity 0.3s, transform 0.3s, width 0.1s;
+  
+    form {
+      height: 100%;
+    }
+  
+    .form-elements-container {
+      width: $modalFormElementsContainerWidth--0-plus;
+      padding-top: 3rem;
+      margin: 0 auto;
+    }
+  }
+  
+  .file-details-title {
+    display: none;
+  }
+  
+  .modal-header {
+    height: $modalHeaderHeight;
+    background-color: $modalHeaderBackgroundColour;
+    color: $modalHeaderTextColour;
+    border-radius: $borderRadius1;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 0 2rem;
+  
+    h1 {
+      float: left;
+      width: calc(100% - 14rem);
+      margin: 0;
+      padding: 0;
+      font-weight: normal;
+      font-size: 1.8rem;
+      line-height: $modalHeaderHeight;
+      font-family: $headerFont--regular;
+    }
+  }
+  
+  .modal-close-button, .popup-close-button {
+    width: $modalHeaderHeight;
+    height: $modalHeaderHeight;
+    position: absolute;
+    right: 0;
+    top: 0;
+    filter: blur(0);
+    background: transparent url('../src/img/'+ $closeIcon + '') center center no-repeat;
+    background-size: 1.7rem 1.7rem;
+  }
+  
+  .popup-close-button {
+    width: 4.2rem;
+    height: 4.2rem;
+    background-size: 1.4rem 1.4rem;
+  }
+  
+  .modal-enter-active {
+
+    .modal-container {
+      transform: translate(-50%, -50%);
+      transition: all 0.5s;
+      opacity: 1;
+    }
+  }
+
+  .modal-enter-done {
+    .modal-container {
+      transform: translate(-50%, -50%);
+    }   
+  }
+  
+  .modal-contents {
+    position: relative;
+    height: calc(100% - #{$modalHeaderHeight} - #{$modalFooterHeight} - 4rem);
+    padding: 2rem 4rem;
+    font-size: 1.4rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: all 0.3s ease-out;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    height: $modalFooterHeight;
+    padding: 2rem 2rem 0;
+    background-color: $modalFooterBackgroundColour;
+    transition: all 0.2s 0.2s;
+  
+    &.single-central-button {
+      justify-content: space-around;
+      align-items: center;
+      height: auto;
+      padding: 0;
+    }
+  }
+  
+  .working {
+  
+    .action-contents-wrapper,
+    .cancel-button,
+    .modal-header {
+      opacity: 0.5;
+    }
+  }

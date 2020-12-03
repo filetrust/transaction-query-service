@@ -1,0 +1,65 @@
+// --- Button Icons --- //
+
+@mixin button($image) {
+    background-image: url('../img/'+ $image);
+    background-size: 3.2rem 3.2rem;
+    background-position: left center;
+    background-repeat: no-repeat;
+  }
+  
+  button {
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+  }
+  
+  .button {
+    display: block;
+    min-width: 9rem;
+    height: $buttonHeight;
+    padding: 0 2rem;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    line-height: $buttonHeight;
+    color: $white;
+    border-radius: 3px;
+    transition: all 0.3s;
+  
+    &.left {
+      margin-right: auto;
+    }
+  
+    &:hover {
+      box-shadow: $boxShadow1;
+    }
+  
+    &.center {
+      margin: 3rem auto;
+    }
+  
+    &:disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+
+  .button-icon {
+    background-image: url('img/download-icon-white.svg');
+    background-size: 3.2rem 3.2rem;
+    background-position: left center;
+    background-repeat: no-repeat;
+    min-width: 0;
+    padding: 0 1.4rem 0 3.4rem;
+    text-align: left;
+  }
+  
+  
+  .button-filled {
+    background-color: $buttonBGColour;
+
+  }
+  

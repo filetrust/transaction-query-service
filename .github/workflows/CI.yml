@@ -1,0 +1,73 @@
+name: CI Build
+
+env:
+  REPOSITORY: glasswallsolutions
+  IMAGE: transactionqueryservice
+  TAG: develop
+
+on:
+  push:
+    branches: [develop]
+ 
+jobs:
+  build-push-docker-image:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    - name: Docker Login
+      uses: docker/login-action@v1.6.0
+      with:
+        username: icapserviceaccount
+        password: ${{ secrets.ICAPDOCKERSECRET }}
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ env.TAG }}-${GITHUB_SHA::7} -t ${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ env.TAG }}-latest .
+        docker push ${{ env.REPOSITORY }}/${{ env.IMAGE }}
+    - name: Install yq - portable yaml processor
+      run: |
+        sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
+        sudo chmod +x /usr/local/bin/yq
+    - name: Checkout icap-infrastructure repo
+      uses: actions/checkout@v2
+      with:
+        repository: filetrust/icap-infrastructure
+        token: ${{ secrets.ICAPGITHUBTOKEN }}
+        path: infra
+    - name: Update image tag in icap-infrastructure repo
+      run: |
+        cd infra
+        IMAGE_TAG=${{ env.TAG }}-${GITHUB_SHA::7}
+        git fetch
+        git checkout -b $IMAGE_TAG origin/${{ env.TAG }}
+        git config user.email github-actions@github.com
+        git config user.name github-actions
+        
+        # update imagestore.transactionqueryservice.tag value in the values.yaml file
+        yq write adaptation/values.yaml imagestore.transactionqueryservice.tag $IMAGE_TAG -i
+        git add adaptation/values.yaml
+        git commit -m 'update image tag'
+        git push origin $IMAGE_TAG
+        
+        # create a pull request from a new branch to target branch, merge the PR and delete the source branch.
+        gh pr create --base ${{ env.TAG }} --title "Update transactionqueryservice image tag to $IMAGE_TAG" --body ""
+        sleep 5s
+        gh pr merge $IMAGE_TAG -s
+      env:
+        GITHUB_TOKEN: ${{ secrets.ICAPGITHUBTOKEN }}
+        
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@master
+      - name: Merge to main branch 🔃
+        uses: devmasx/merge-branch@v1.1.0
+        with:
+          type: now
+          target_branch: main
+        env:
+          GITHUB_TOKEN: ${{secrets.TOKEN_GITHUB}}  
+          
+
