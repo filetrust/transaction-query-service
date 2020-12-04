@@ -2,7 +2,7 @@ name: CI Build
 
 env:
   REPOSITORY: glasswallsolutions
-  IMAGE: transactionqueryservice
+  IMAGE: transaction-query-service
   TAG: develop
 
 on:
