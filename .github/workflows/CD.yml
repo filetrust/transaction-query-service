@@ -2,7 +2,7 @@ name: CD Build
 
 env:
   REPOSITORY: glasswallsolutions
-  IMAGE: transactionqueryservice
+  IMAGE: transaction-query-service
   TAG: main
 
 on:
