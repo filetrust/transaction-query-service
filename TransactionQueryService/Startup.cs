@@ -59,7 +59,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService
             {
                 // Mounted directories in /mnt/stores/[storeName]
                 return System.IO.Directory.GetDirectories("/mnt/stores")
-                    .Select(share => new MountedFileStore(share)).ToArray();
+                    .Select(share => new MountedFileStore(s.GetRequiredService<ILogger<MountedFileStore>>(), share)).ToArray();
             });
         }
 
