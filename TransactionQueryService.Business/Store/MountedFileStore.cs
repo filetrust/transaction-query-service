@@ -5,15 +5,20 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
 {
     public class MountedFileStore : IFileStore
     {
+        private readonly ILogger<MountedFileStore> _logger;
         private readonly string _rootPath;
 
-        public MountedFileStore(string rootPath)
+        public MountedFileStore(
+            ILogger<MountedFileStore> logger,
+            string rootPath)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _rootPath = rootPath ?? throw new ArgumentNullException(nameof(rootPath));
         }
 
@@ -57,6 +62,8 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
         {
             if (cancellationToken.IsCancellationRequested)
                 yield break;
+
+            _logger.LogInformation("Searching directory '{0}'", directory);
 
             var subDirectories = Directory.GetDirectories(directory);
             var subFiles = Directory.GetFiles(directory);
