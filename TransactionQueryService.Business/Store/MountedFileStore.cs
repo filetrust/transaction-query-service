@@ -82,8 +82,6 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
                         break;
                     case PathAction.Stop:
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
             }
 

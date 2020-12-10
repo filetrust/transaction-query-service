@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Glasswall.Administration.K8.TransactionQueryService.Common.Configuration.Validation.Errors
 {
+    [ExcludeFromCodeCoverage]
     public class ConfigurationParserError
     {
         public ConfigurationParserError(string paramName, string reason)
