@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Store;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Enums;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
-using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
 using Moq;
 using NUnit.Framework;
+using TestCommon;
 
 namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTests.GetTransactionsMethod
 {
@@ -36,14 +36,17 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     TimestampRangeEnd = DateTimeOffset.MaxValue
                 }
             };
-
-            Share1.Setup(s => s.ListAsync(It.IsAny<IPathFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(_paths1 = GetSomePaths(1));
-
-            Share2.Setup(s => s.ListAsync(It.IsAny<IPathFilter>(), It.IsAny<CancellationToken>()))
-                .Returns(_paths2 = GetSomePaths(2));
-
+            
             var fileId = Guid.NewGuid();
+
+            _paths1 = GetSomePaths(1);
+            _paths2 = GetSomePaths(2);
+
+            Share1.Setup(s => s.ListAsync(It.IsAny<DatePathFilter>(), It.IsAny<CancellationToken>()))
+                .Returns(_paths1);
+
+            Share2.Setup(s => s.ListAsync(It.IsAny<DatePathFilter>(), It.IsAny<CancellationToken>()))
+                .Returns(_paths2);
 
             JsonSerialiser.Setup(s => s.Deserialize<TransactionAdapationEventMetadataFile>(It.IsAny<MemoryStream>(), It.IsAny<Encoding>()))
                 .ReturnsAsync(_expectedMetadata = new TransactionAdapationEventMetadataFile

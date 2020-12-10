@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using NUnit.Framework;
+using System.Diagnostics.CodeAnalysis;
 using TestCommon;
 
 namespace TransactionQueryService.Tests.ValidateModelTests
 {
     [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class ValidateModelTests : UnitTestBase<ValidateModelAttribute>
     {
         [OneTimeSetUp]

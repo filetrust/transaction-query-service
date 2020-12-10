@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
 
