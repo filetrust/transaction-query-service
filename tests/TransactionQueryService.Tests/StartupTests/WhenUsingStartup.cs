@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
+using System;
 using System.IO;
 using TestCommon;
 
@@ -31,8 +32,14 @@ namespace TransactionQueryService.Tests.StartupTests
         [Test]
         public void Can_Resolve_Transaction_Service()
         {
+
             var services = new ServiceCollection();
-            
+
+            Environment.SetEnvironmentVariable("username", "username");
+            Environment.SetEnvironmentVariable("password", "password");
+
+            ClassInTest = new Startup(new ConfigurationBuilder().AddEnvironmentVariables().Build());
+
             ClassInTest.ConfigureServices(services);
 
             Assert.That(services.Any(s =>

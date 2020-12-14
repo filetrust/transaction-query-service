@@ -29,7 +29,7 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests
         {
             var attributes = typeof(TransactionController).GetCustomAttributes(false);
 
-            Assert.That(attributes, Has.Exactly(2).Items);
+            Assert.That(attributes, Has.Exactly(3).Items);
             Assert.That(attributes[0], Is.InstanceOf<ApiControllerAttribute>());
             Assert.That(attributes[1], Is.InstanceOf<RouteAttribute>().With.Property(nameof(RouteAttribute.Template)).EqualTo("api/v1/transactions"));
         }

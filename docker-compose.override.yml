@@ -4,9 +4,12 @@ services:
   transactionqueryservice:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - username=example
+      - password=example123456789
     ports:
       - "38433:443"
+      - "38080:80"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - C:\Shares\share1:/mnt/stores/transactions:ro
