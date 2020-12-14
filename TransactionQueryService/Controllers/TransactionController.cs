@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Controllers
 {
     [ApiController]
     [Route("api/v1/transactions")]
+    [Authorize]
     public class TransactionController : ControllerBase
     {
         private readonly ILogger<TransactionController> _logger;

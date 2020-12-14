@@ -5,8 +5,10 @@ using System.Linq;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Serialisation;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Services;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Store;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Configuration;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Serialisation;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +17,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Configuration;
+using System.Threading.Tasks;
 
 namespace Glasswall.Administration.K8.TransactionQueryService
 {
@@ -61,11 +67,42 @@ namespace Glasswall.Administration.K8.TransactionQueryService
                 return System.IO.Directory.GetDirectories("/mnt/stores")
                     .Select(share => new MountedFileStore(s.GetRequiredService<ILogger<MountedFileStore>>(), share)).ToArray();
             });
-        }
 
+            var config = ValidateAndBind(Configuration);
+            services.TryAddSingleton(config);
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = "auth-app",
+                        ValidateAudience = false,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.TokenSecret))
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Add("Token-Expired", "true");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+        }
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
@@ -90,6 +127,21 @@ namespace Glasswall.Administration.K8.TransactionQueryService
             });
 
             app.UseCors("*");
+        }
+
+        private ITransactionQueryServiceConfiguration ValidateAndBind(IConfiguration configuration)
+        {
+            var username = configuration["username"];
+            var password = configuration["password"];
+
+            if (string.IsNullOrWhiteSpace(username)) throw new ConfigurationErrorsException("username was not defined");
+            if (string.IsNullOrWhiteSpace(password)) throw new ConfigurationErrorsException("password was not defined");
+
+            var businessConfig = new TransactionQueryServiceConfiguration();
+
+            configuration.Bind(businessConfig);
+
+            return businessConfig;
         }
     }
 }
