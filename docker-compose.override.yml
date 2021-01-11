@@ -12,4 +12,4 @@ services:
       - "38080:80"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - C:\Shares\share1:/mnt/stores/transactions:ro
+      - C:\Shares\neu:/mnt/stores/transactions:ro

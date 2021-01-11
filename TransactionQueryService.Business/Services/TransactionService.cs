@@ -23,7 +23,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
         private readonly IXmlSerialiser _xmlSerialiser;
 
         public TransactionService(
-            ILogger<ITransactionService> logger, 
+            ILogger<ITransactionService> logger,
             IEnumerable<IFileStore> fileStores,
             IJsonSerialiser jsonSerialiser,
             IXmlSerialiser xmlSerialiser)
@@ -82,7 +82,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
         }
 
         private async Task<GetTransactionsResponseV1> InternalGetTransactionsAsync(
-            GetTransactionsRequestV1 request, 
+            GetTransactionsRequestV1 request,
             CancellationToken cancellationToken)
         {
             _logger.LogInformation("Searching file store ");
@@ -105,22 +105,36 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
 
         private async IAsyncEnumerable<GetTransactionsResponseV1File> HandleShare(
             IFileStore store,
-            FileStoreFilterV1 filter, 
+            FileStoreFilterV1 filter,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await foreach (var fileDirectory in store.ListAsync(new DatePathFilter(filter), cancellationToken))
             {
                 if (filter.AllFileIdsFound) yield break;
 
+                var successAndResponse = await TryGetTransactionsResponseV1File(store, filter, fileDirectory, cancellationToken);
+
+                if (successAndResponse.Item1)
+                    yield return successAndResponse.Item2;
+            }
+        }
+
+        private async Task<(bool, GetTransactionsResponseV1File)> TryGetTransactionsResponseV1File(IFileStore store, FileStoreFilterV1 filter, string fileDirectory, CancellationToken cancellationToken)
+        {
+            try
+            {
                 var eventFile = await DownloadFile(store, fileDirectory, cancellationToken);
 
-                if (!eventFile.TryParseEventDateWithFilter(filter, out var timestamp)) continue;
-                if (!eventFile.TryParseFileIdWithFilter(filter, out var fileId)) continue;
-                if (!eventFile.TryParseFileTypeWithFilter(filter, out var fileType)) continue;
-                if (!eventFile.TryParseRiskWithFilter(filter, out var risk)) continue;
-                if (!eventFile.TryParsePolicyIdWithFilter(filter, out var policyId)) continue;
+                if (eventFile == null)
+                    throw new Exception("Unable to download metadata.json");
 
-                yield return new GetTransactionsResponseV1File
+                if (!eventFile.TryParseEventDateWithFilter(filter, out var timestamp)) return (false, null);
+                if (!eventFile.TryParseFileIdWithFilter(filter, out var fileId)) return (false, null);
+                if (!eventFile.TryParseFileTypeWithFilter(filter, out var fileType)) return (false, null); 
+                if (!eventFile.TryParseRiskWithFilter(filter, out var risk)) return (false, null); 
+                if (!eventFile.TryParsePolicyIdWithFilter(filter, out var policyId)) return (false, null);
+
+                return (true, new GetTransactionsResponseV1File
                 {
                     ActivePolicyId = policyId,
                     DetectionFileType = fileType,
@@ -128,8 +142,14 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                     Risk = risk,
                     Timestamp = timestamp,
                     Directory = fileDirectory
-                };
+                });
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{fileDirectory} - Exception raised", ex);
+            }
+
+            return (false, null);
         }
 
         private async Task<TransactionAdapationEventMetadataFile> DownloadFile(IFileStore store, string fileDirectory, CancellationToken cancellationToken)
