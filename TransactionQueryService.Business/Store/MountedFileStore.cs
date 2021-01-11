@@ -49,7 +49,10 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
             
             using (var fs = File.OpenRead(path))
             {
-                await fs.CopyToAsync(ms, (int) fs.Length, cancellationToken);
+                if (fs.Length > 0)
+                {
+                    await fs.CopyToAsync(ms, (int)fs.Length, cancellationToken);
+                }
             }
 
             return ms;
