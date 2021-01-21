@@ -5,9 +5,16 @@ env:
 on:
   push:
     branches: '*'
+    paths:
+      - 'TransactionQueryService.Business/**'
+      - 'TransactionQueryService.Common/**'
+      - 'TransactionQueryService/**'  
   pull_request:
     branches: [ develop ]
-
+    paths:
+      - 'TransactionQueryService.Business/**'
+      - 'TransactionQueryService.Common/**'
+      - 'TransactionQueryService/**' 
 jobs:
   build:
     runs-on: ubuntu-latest
