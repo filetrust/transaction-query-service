@@ -5,12 +5,9 @@ env:
 on:
   push:
     branches: '*'
-    paths:
-      - 'cloud-proxy-app/**'
   pull_request:
     branches: [ develop ]
-    paths:
-      - 'cloud-proxy-app/**'
+
 jobs:
   build:
     runs-on: ubuntu-latest
