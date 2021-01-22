@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/transaction-query-service/static/css/main.f979c2f7.chunk.css",
+    "main.js": "/transaction-query-service/static/js/main.146dc999.chunk.js",
+    "main.js.map": "/transaction-query-service/static/js/main.146dc999.chunk.js.map",
+    "runtime-main.js": "/transaction-query-service/static/js/runtime-main.dfcecca4.js",
+    "runtime-main.js.map": "/transaction-query-service/static/js/runtime-main.dfcecca4.js.map",
+    "static/css/2.ecb7c289.chunk.css": "/transaction-query-service/static/css/2.ecb7c289.chunk.css",
+    "static/js/2.533837db.chunk.js": "/transaction-query-service/static/js/2.533837db.chunk.js",
+    "static/js/2.533837db.chunk.js.map": "/transaction-query-service/static/js/2.533837db.chunk.js.map",
+    "index.html": "/transaction-query-service/index.html",
+    "precache-manifest.7fc7e3a9261d2a36f2984b6fb5532730.js": "/transaction-query-service/precache-manifest.7fc7e3a9261d2a36f2984b6fb5532730.js",
+    "service-worker.js": "/transaction-query-service/service-worker.js",
+    "static/css/2.ecb7c289.chunk.css.map": "/transaction-query-service/static/css/2.ecb7c289.chunk.css.map",
+    "static/css/main.f979c2f7.chunk.css.map": "/transaction-query-service/static/css/main.f979c2f7.chunk.css.map",
+    "static/js/2.533837db.chunk.js.LICENSE.txt": "/transaction-query-service/static/js/2.533837db.chunk.js.LICENSE.txt",
+    "static/media/api.yaml": "/transaction-query-service/static/media/api.6400afe6.yaml",
+    "static/media/App.css": "/transaction-query-service/static/media/roboto-regular-webfont.d96d07c1.woff2",
+    "static/media/logo.svg": "/transaction-query-service/static/media/logo.6c8e5727.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.dfcecca4.js",
+    "static/css/2.ecb7c289.chunk.css",
+    "static/js/2.533837db.chunk.js",
+    "static/css/main.f979c2f7.chunk.css",
+    "static/js/main.146dc999.chunk.js"
+  ]
+}
