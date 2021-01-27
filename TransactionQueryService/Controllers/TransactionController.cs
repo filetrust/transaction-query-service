@@ -66,7 +66,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Controllers
 
             return Ok(new
             {
-                totalProcessed =dateLookupDict.Sum(f => f.Value),
+                totalProcessed = dateLookupDict.Sum(f => f.Value),
                 data = dateLookupDict.Select(s => new { date = s.Key, processed = s.Value }).OrderBy(f => f.date)
             });
         }
