@@ -21,7 +21,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Configuration;
 using System.Threading.Tasks;
-using Prometheus;
 
 namespace Glasswall.Administration.K8.TransactionQueryService
 {
@@ -65,7 +64,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService
             services.TryAddTransient<IEnumerable<IFileStore>>(s =>
             {
                 // Mounted directories in /mnt/stores/[storeName]
-                return System.IO.Directory.GetDirectories("/mnt/stores")
+                return System.IO.Directory.GetDirectories(MountingInfo.MountLocation)
                     .Select(share => new MountedFileStore(s.GetRequiredService<ILogger<MountedFileStore>>(), share)).ToArray();
             });
 
@@ -109,8 +108,6 @@ namespace Glasswall.Administration.K8.TransactionQueryService
 
             app.UseRouting();
             app.UseAuthorization();
-            app.UseMetricServer();
-            app.UseHttpMetrics();
             
             app.Use((context, next) =>
             {
@@ -127,7 +124,6 @@ namespace Glasswall.Administration.K8.TransactionQueryService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapMetrics();
             });
 
             app.UseCors("*");
