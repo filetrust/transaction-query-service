@@ -32,10 +32,4 @@ jobs:
           npm run test
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
-      - uses: cypress-io/github-action@v1
-        with:
-          browser: chrome
-          headless: true
-          working-directory: gh-page
-          start: npm start
       - uses: actions/checkout@v1

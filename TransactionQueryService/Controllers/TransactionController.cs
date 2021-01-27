@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
@@ -48,6 +50,25 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Controllers
             _logger.LogInformation("Finished get detail request");
 
             return Ok(detail);
+        }
+
+        [HttpGet("metrics")]
+        public async Task<IActionResult> GetMetrics([FromQuery] DateTimeOffset fromDate, [FromQuery]DateTimeOffset toDate, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Beginning get metrics request");
+
+            var dateLookupDict = new ConcurrentDictionary<DateTimeOffset, int>();
+
+            await foreach (var date in _transactionService.GetHourTimestampsOfFiles(fromDate, toDate, cancellationToken))
+                dateLookupDict.AddOrUpdate(date, 1, (d, c) => c+1);
+
+            _logger.LogInformation("Finished get metrics request");
+
+            return Ok(new
+            {
+                totalProcessed = dateLookupDict.Sum(f => f.Value),
+                data = dateLookupDict.Select(s => new { date = s.Key, processed = s.Value }).OrderBy(f => f.date)
+            });
         }
     }
 }
