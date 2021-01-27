@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -47,6 +48,34 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                 throw new ArgumentException("Value must not be null or whitespace", nameof(fileDirectory));
 
             return InternalTryGetDetailAsync(fileDirectory, cancellationToken);
+        }
+
+        public async IAsyncEnumerable<DateTimeOffset> GetHourTimestampsOfFiles(DateTimeOffset fromDate, DateTimeOffset toDate, [EnumeratorCancellation]CancellationToken cancellationToken)
+        {
+            foreach (var fileStore in _fileStores.AsParallel())
+            {
+                await foreach (var fileDirectory in fileStore.ListAsync(new DatePathFilter(new FileStoreFilterV1 { TimestampRangeStart = fromDate, TimestampRangeEnd = toDate }), cancellationToken))
+                {
+                    if (!TryParseHourlyDateFromPath(fileDirectory.Replace(MountingInfo.MountLocation, ""), out var dateExcludingTime))
+                        continue;
+
+                    yield return dateExcludingTime;
+                }
+            }
+        }
+
+        private static bool TryParseHourlyDateFromPath(string path, out DateTimeOffset parsed)
+        {
+            var pathSplit = path.Split('/');
+            parsed = DateTimeOffset.MaxValue;
+
+            if (!int.TryParse(pathSplit[1], out var parsedYear)) return false;
+            if (!int.TryParse(pathSplit[2], out var parsedMonth)) return false;
+            if (!int.TryParse(pathSplit[3], out var parsedDay)) return false;
+            if (!int.TryParse(pathSplit[4], out var parsedHour)) return false;
+
+            parsed = new DateTimeOffset(new DateTime(parsedYear, parsedMonth, parsedDay, parsedHour, 0, 0));
+            return true;
         }
 
         private async Task<GetDetailResponseV1> InternalTryGetDetailAsync(string fileDirectory, CancellationToken cancellationToken)
