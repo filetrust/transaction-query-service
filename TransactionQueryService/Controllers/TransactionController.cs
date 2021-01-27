@@ -64,7 +64,11 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Controllers
 
             _logger.LogInformation("Finished get metrics request");
 
-            return Ok(dateLookupDict.Select(s => new { date = s.Key, processed = s.Value }).OrderBy(f => f.date));
+            return Ok(new
+            {
+                totalProcessed =dateLookupDict.Sum(f => f.Value),
+                data = dateLookupDict.Select(s => new { date = s.Key, processed = s.Value }).OrderBy(f => f.date)
+            });
         }
     }
 }
