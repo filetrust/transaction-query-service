@@ -118,14 +118,14 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
     public partial class GWallInfoDocumentStatisticsDocumentSummary
     {
 
-        private uint totalSizeInBytesField;
+        private long totalSizeInBytesField;
 
         private string fileTypeField;
 
         private string versionField;
 
         /// <remarks/>
-        public uint TotalSizeInBytes
+        public long TotalSizeInBytes
         {
             get
             {
@@ -254,7 +254,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private GWallInfoDocumentStatisticsContentGroupsContentGroup[] contentGroupField;
 
-        private byte groupCountField;
+        private long groupCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("ContentGroup")]
@@ -272,7 +272,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte groupCount
+        public long groupCount
         {
             get
             {
@@ -379,7 +379,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private GWallInfoDocumentStatisticsContentGroupsContentGroupContentItemsContentItem[] contentItemField;
 
-        private byte itemCountField;
+        private long itemCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("ContentItem")]
@@ -397,7 +397,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte itemCount
+        public long itemCount
         {
             get
             {
@@ -420,15 +420,15 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private string technicalDescriptionField;
 
-        private ushort instanceCountField;
+        private long instanceCountField;
 
-        private uint totalSizeInBytesField;
+        private long totalSizeInBytesField;
 
-        private uint averageSizeInBytesField;
+        private long averageSizeInBytesField;
 
-        private uint minSizeInBytesField;
+        private long minSizeInBytesField;
 
-        private uint maxSizeInBytesField;
+        private long maxSizeInBytesField;
 
         /// <remarks/>
         public string TechnicalDescription
@@ -444,7 +444,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort InstanceCount
+        public long InstanceCount
         {
             get
             {
@@ -457,7 +457,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint TotalSizeInBytes
+        public long TotalSizeInBytes
         {
             get
             {
@@ -470,7 +470,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint AverageSizeInBytes
+        public long AverageSizeInBytes
         {
             get
             {
@@ -483,7 +483,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint MinSizeInBytes
+        public long MinSizeInBytes
         {
             get
             {
@@ -496,7 +496,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint MaxSizeInBytes
+        public long MaxSizeInBytes
         {
             get
             {
@@ -519,7 +519,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private GWallInfoDocumentStatisticsContentGroupsContentGroupSanitisationItemsSanitisationItem[] sanitisationItemField;
 
-        private byte itemCountField;
+        private long itemCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("SanitisationItem")]
@@ -537,7 +537,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte itemCount
+        public long itemCount
         {
             get
             {
@@ -560,17 +560,17 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private string technicalDescriptionField;
 
-        private uint sanitisationIdField;
+        private long sanitisationIdField;
 
-        private byte instanceCountField;
+        private long instanceCountField;
 
-        private ushort totalSizeInBytesField;
+        private long totalSizeInBytesField;
 
-        private ushort averageSizeInBytesField;
+        private long averageSizeInBytesField;
 
-        private ushort minSizeInBytesField;
+        private long minSizeInBytesField;
 
-        private ushort maxSizeInBytesField;
+        private long maxSizeInBytesField;
 
         /// <remarks/>
         public string TechnicalDescription
@@ -586,7 +586,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint SanitisationId
+        public long SanitisationId
         {
             get
             {
@@ -599,7 +599,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public byte InstanceCount
+        public long InstanceCount
         {
             get
             {
@@ -612,7 +612,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort TotalSizeInBytes
+        public long TotalSizeInBytes
         {
             get
             {
@@ -625,7 +625,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort AverageSizeInBytes
+        public long AverageSizeInBytes
         {
             get
             {
@@ -638,7 +638,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort MinSizeInBytes
+        public long MinSizeInBytes
         {
             get
             {
@@ -651,7 +651,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort MaxSizeInBytes
+        public long MaxSizeInBytes
         {
             get
             {
@@ -674,7 +674,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private GWallInfoDocumentStatisticsContentGroupsContentGroupRemedyItemsRemedyItem[] remedyItemField;
 
-        private byte itemCountField;
+        private long itemCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("RemedyItem")]
@@ -692,7 +692,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte itemCount
+        public long itemCount
         {
             get
             {
@@ -715,7 +715,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private string technicalDescriptionField;
 
-        private ushort instanceCountField;
+        private long instanceCountField;
 
         /// <remarks/>
         public string TechnicalDescription
@@ -731,7 +731,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public ushort InstanceCount
+        public long InstanceCount
         {
             get
             {
@@ -754,7 +754,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private GWallInfoDocumentStatisticsContentGroupsContentGroupIssueItemsIssueItem[] issueItemField;
 
-        private byte itemCountField;
+        private long itemCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("IssueItem")]
@@ -772,7 +772,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte itemCount
+        public long itemCount
         {
             get
             {
@@ -795,9 +795,9 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
 
         private string technicalDescriptionField;
 
-        private uint issueIdField;
+        private long issueIdField;
 
-        private byte instanceCountField;
+        private long instanceCountField;
 
         private string riskLevelField;
 
@@ -815,7 +815,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public uint IssueId
+        public long IssueId
         {
             get
             {
@@ -828,7 +828,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
         }
 
         /// <remarks/>
-        public byte InstanceCount
+        public long InstanceCount
         {
             get
             {
@@ -862,11 +862,11 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.Anal
     public partial class GWallInfoDocumentStatisticsExtractedItems
     {
 
-        private byte itemCountField;
+        private long itemCountField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public byte itemCount
+        public long itemCount
         {
             get
             {
