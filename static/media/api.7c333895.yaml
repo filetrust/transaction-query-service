@@ -4,15 +4,70 @@ info:
   description: These are HTTP endpoints that query the transaction store
   version: 0.1.9
 servers:
-  - url: https://transactionqueryservicefunction20201016103513.azurewebsites.net
-    description: Azure function
-  - url: http://localhost:32769
-    description: Local Dev HTTP
   - url: http://localhost:32768
     description: Local Dev HTTPS
+
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    
+
 paths:
+  /api/v1/transactions/metrics:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Aggregates the metrics from each cluster in the ICAP environment
+      description: This endpoint accepts a date range to aggregate metrics form and to
+      parameters:
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          required: true
+          description: "Inclusive start date to search"
+          example: "2020-01-01T12:00:00"
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          required: true
+          description: "Inclusive end date to search"
+          example: "2022-01-01T12:00:00"
+      responses:
+        200:    # status code
+          description: OK - The transactions were retrieved successfully
+          content:          
+            "application/json":
+              schema:
+                type: object
+                description: A response detailing each transaction file matched by the input filter
+                properties:
+                  totalProcessed:
+                    type: number
+                    example: 100
+                    description: Total number of files processed in the time range
+                  data:
+                    type: array
+                    description: Total number of files processed in the time range by hour
+                    items:
+                      type: object
+                      description: An individual hour segment metric
+                      properties:
+                        date: 
+                          type: string
+                          example: "2021-01-06T17:00:00+00:00"
+                          description: A timestamp of the start of the hour to which the count belongs
+                        processed:
+                          type: number
+                          example: 100
+                          description: A total count of transactions in this hour slot
   /api/v1/transactions:
     post:
+      security:
+        - bearerAuth: []
       summary: Gets a set of transactions matching the criteria set in the request body
       description: This endpoint accepts an input JSON body containing criteria to search for transactions.
       requestBody:
@@ -172,6 +227,8 @@ paths:
         415:
           description: Unsupported Media Type - This happens when the request was not sent in JSON.
     get:
+      security:
+        - bearerAuth: []
       summary: "Gets the finer details for a specified transaction"
       description: "This endpoint takes a directory path for a specified file on the transaction store and returns the details associated"
       parameters:
