@@ -64,6 +64,40 @@ paths:
                           type: number
                           example: 100
                           description: A total count of transactions in this hour slot
+                        sentToNcfs:
+                          type: number
+                          example: 100
+                          description: A total count of files in this hour slot sent to NCFS
+                        processedByOutcome:
+                          type: object
+                          properties:
+                            Failed:
+                              type: number
+                              description: Number of files that failed reconstruction by the engine
+                              example: 1
+                            Replace:
+                              type: number
+                              description: Number of files that were rebuilt by the engine
+                              example: 1
+                            Unmodified:
+                              type: number
+                              description: Number of files that were not touched by the engine
+                              example: 1
+                        processedByNcfs:
+                          type: object
+                          properties:
+                            Blocked:
+                              type: number
+                              description: Number of files that were blocked by NCFS
+                              example: 1
+                            Relayed:
+                              type: number
+                              description: Number of files that were relayed as dicated by NCFS
+                              example: 1
+                            Unmodified:
+                              type: number
+                              description: Number of files that were unmodified by NCFS
+                              example: 1
   /api/v1/transactions:
     post:
       security:
