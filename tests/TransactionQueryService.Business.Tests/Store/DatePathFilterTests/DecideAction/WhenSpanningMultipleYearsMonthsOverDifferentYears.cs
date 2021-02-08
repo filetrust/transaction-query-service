@@ -21,7 +21,7 @@ namespace TransactionQueryService.Business.Tests.Store.DatePathFilterTests.Decid
                 TimestampRangeEnd = new DateTimeOffset(2021, 2, 1, 0, 0, 0, 0, TimeSpan.Zero)
             };
 
-            ClassInTest = new DatePathFilter(_input);
+            ClassInTest = new DatePathFilter(_input.TimestampRangeStart, _input.TimestampRangeEnd);
         }
 
         [Test]

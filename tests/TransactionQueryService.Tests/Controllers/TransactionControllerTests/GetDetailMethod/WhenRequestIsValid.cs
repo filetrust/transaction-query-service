@@ -14,14 +14,14 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.G
     {
         private string _input;
         private IActionResult _result;
-        private GetDetailResponseV1 _expected;
+        private TransactionDetail _expected;
 
         [OneTimeSetUp]
         public async Task OnetimeSetup()
         {
             base.OnetimeSetupShared();
 
-            _expected = new GetDetailResponseV1();
+            _expected = new TransactionDetail();
 
             Service.Setup(s => s.GetDetailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_expected);

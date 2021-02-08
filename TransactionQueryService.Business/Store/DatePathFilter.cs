@@ -17,12 +17,10 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
         private readonly DateTimeOffset _start;
         private readonly DateTimeOffset _end;
 
-        public DatePathFilter(FileStoreFilterV1 filter)
+        public DatePathFilter(DateTimeOffset? start, DateTimeOffset? end)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
-
-            _start = filter.TimestampRangeStart ?? throw new ArgumentException("Start was null", nameof(filter));
-            _end = filter.TimestampRangeEnd ?? throw new ArgumentException("End was null", nameof(filter));
+            _start = start ?? throw new ArgumentNullException(nameof(start));
+            _end = end ?? throw new ArgumentNullException(nameof(end));
         }
 
         public PathAction DecideAction(string path)

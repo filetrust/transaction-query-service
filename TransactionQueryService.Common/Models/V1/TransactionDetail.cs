@@ -3,7 +3,7 @@ using Glasswall.Administration.K8.TransactionQueryService.Common.Models.Analysis
 
 namespace Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1
 {
-    public class GetDetailResponseV1
+    public class TransactionDetail
     {
         public DetailStatus Status { get; set; }
         public GWallInfo AnalysisReport { get; set; }
