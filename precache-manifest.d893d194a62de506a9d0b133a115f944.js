@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "9c8da1c81e0ecc0b4ccfd2e10ac8fe48",
+    "revision": "d73840add4d9755b0a765b0410e2faf7",
     "url": "/transaction-query-service/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/transaction-query-service/static/css/2.ecb7c289.chunk.css"
   },
   {
-    "revision": "5341c9d194b660b9c83a",
+    "revision": "7a5348f51ef2908cb981",
     "url": "/transaction-query-service/static/css/main.f979c2f7.chunk.css"
   },
   {
@@ -20,16 +20,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/transaction-query-service/static/js/2.533837db.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "5341c9d194b660b9c83a",
-    "url": "/transaction-query-service/static/js/main.9a321c7e.chunk.js"
+    "revision": "7a5348f51ef2908cb981",
+    "url": "/transaction-query-service/static/js/main.d64dec78.chunk.js"
   },
   {
     "revision": "6fb463f4fc390381f666",
     "url": "/transaction-query-service/static/js/runtime-main.dfcecca4.js"
   },
   {
-    "revision": "7c33389523cf4e4f62084fa13288f580",
-    "url": "/transaction-query-service/static/media/api.7c333895.yaml"
+    "revision": "6b09c1183095c89bd121006b126e74f2",
+    "url": "/transaction-query-service/static/media/api.6b09c118.yaml"
   },
   {
     "revision": "8503c64fa486375dc20b3c00aa2e250a",
