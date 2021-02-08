@@ -7,20 +7,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Store;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Enums;
-using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
 using Moq;
 using NUnit.Framework;
-using TestCommon;
 
-namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTests.GetTransactionsMethod
+namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTests.GetTransactionAnalyticsAsync
 {
     [TestFixture]
     public class WhenAllStoresReturnData : TransactionServiceTestBase
     {
-        private GetTransactionsRequestV1 _input;
         private IAsyncEnumerable<string> _paths1;
         private IAsyncEnumerable<string> _paths2;
-        private Transactions _output;
+        private TransactionAnalytics _output;
         private TransactionAdapationEventMetadataFile _expectedMetadata;
 
         [OneTimeSetUp]
@@ -28,15 +26,6 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
         {
             base.SharedSetup();
 
-            _input = new GetTransactionsRequestV1
-            {
-                Filter = new FileStoreFilterV1
-                {
-                    TimestampRangeStart = DateTimeOffset.MinValue,
-                    TimestampRangeEnd = DateTimeOffset.MaxValue
-                }
-            };
-            
             var fileId = Guid.NewGuid();
 
             _paths1 = GetSomePaths(1);
@@ -51,7 +40,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
             JsonSerialiser.Setup(s => s.Deserialize<TransactionAdapationEventMetadataFile>(It.IsAny<MemoryStream>(), It.IsAny<Encoding>()))
                 .ReturnsAsync(_expectedMetadata = new TransactionAdapationEventMetadataFile
                 {
-                    Events = new []
+                    Events = new[]
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(fileId),
                         TransactionAdaptionEventModel.FileTypeDetectedEvent(FileType.Bmp, fileId),
@@ -63,7 +52,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     }
                 });
 
-            _output = await ClassInTest.GetTransactionsAsync(_input, CancellationToken.None);
+            _output = await ClassInTest.GetTransactionAnalyticsAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, CancellationToken.None);
         }
 
         [Test]
@@ -72,49 +61,21 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
             Share1.Verify(s => s.ListAsync(It.IsAny<DatePathFilter>(), It.IsAny<CancellationToken>()), Times.Once);
             Share2.Verify(s => s.ListAsync(It.IsAny<DatePathFilter>(), It.IsAny<CancellationToken>()), Times.Once);
         }
-
-        [Test]
-        public async Task Each_Store_Data_Is_Downloaded()
-        {
-            await foreach (var i in _paths1)
-            {
-                Share1.Verify(s => s.DownloadAsync(It.Is<string>(x => x == $"{i}/metadata.json"), It.IsAny<CancellationToken>()), Times.Once);
-            }
-
-            await foreach (var i in _paths2)
-            {
-                Share2.Verify(s => s.DownloadAsync(It.Is<string>(x => x == $"{i}/metadata.json"), It.IsAny<CancellationToken>()), Times.Once);
-            }
-        }
-
+        
         [Test]
         public async Task Correct_Response_Is_Returned()
         {
-            Assert.That(_output, Is.Not.Null);
-
-            await foreach (var path in _paths1)
-            {
-                var obj = _output.Files.Single(s => s.Directory == path);
-                
-                Assert.That(obj, Is.Not.Null);
-                Assert.That(obj.ActivePolicyId.ToString(), Is.EqualTo(_expectedMetadata.Events.EventOrDefault(EventId.NewDocument).Properties["PolicyId"]));
-                Assert.That(obj.FileId.ToString(), Is.EqualTo(_expectedMetadata.Events.EventOrDefault(EventId.NewDocument).Properties["FileId"]));
-                Assert.That((int)obj.DetectionFileType, Is.EqualTo(int.Parse(_expectedMetadata.Events.EventOrDefault(EventId.FileTypeDetected).Properties["FileType"])));
-                Assert.That(obj.Risk, Is.EqualTo(Risk.BlockedByNCFS));
-                Assert.That(obj.Timestamp, Is.EqualTo(DateTimeOffset.Parse(_expectedMetadata.Events.EventOrDefault(EventId.NewDocument).Properties["Timestamp"])));
-            }
-
-            await foreach (var path in _paths2)
-            {
-                Assert.That(_output.Files.Any(s => s.Directory == path));
-            }
+            Assert.That(_output.TotalProcessed, Is.EqualTo(10));
+            Assert.That(_output.Data, Has.One.Items);
+            Assert.That(_output.Data.ElementAt(0).Processed, Is.EqualTo(10));
+            Assert.That(_output.Data.ElementAt(0).SentToNcfs, Is.EqualTo(10));
         }
 
         private static async IAsyncEnumerable<string> GetSomePaths(int store)
         {
             for (var index = 0; index < 5; index++)
             {
-                yield return $"some/path/{store}/{index}";
+                yield return $"{MountingInfo.MountLocation}{store}/2020/12/1/21/{Guid.NewGuid()}";
             }
 
             await Task.CompletedTask;

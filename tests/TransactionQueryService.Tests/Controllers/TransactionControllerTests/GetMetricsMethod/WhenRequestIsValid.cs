@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,7 +15,7 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.G
     public class WhenRequestIsValid : TransactionControllerTestBase
     {
         private IActionResult _result;
-        private IAsyncEnumerable<DateTimeOffset> _expected;
+        private TransactionAnalytics _expected;
         private DateTimeOffset _input1;
         private DateTimeOffset _input2;
 
@@ -23,14 +24,10 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.G
         {
             base.OnetimeSetupShared();
 
-            _expected = AsAsyncEnumerable(new[]
-            {
-                new DateTimeOffset(new DateTime(2020, 1, 1, 1, 0, 0)),
-                new DateTimeOffset(new DateTime(2020, 1, 1, 1, 0, 0))
-            });
+            _expected = new TransactionAnalytics();
 
-            Service.Setup(s => s.GetHourTimestampsOfFiles(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-                .Returns(_expected);
+            Service.Setup(s => s.GetTransactionAnalyticsAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_expected);
 
             _result = await ClassInTest.GetMetrics(_input1 = DateTimeOffset.UtcNow, _input2 = DateTimeOffset.UtcNow, CancellationToken.None);
         }
@@ -59,7 +56,7 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.G
         public void Transactions_Are_Retrieved()
         {
             Service.Verify(
-                s => s.GetHourTimestampsOfFiles(
+                s => s.GetTransactionAnalyticsAsync(
                     It.Is<DateTimeOffset>(x => x == _input1),
                     It.Is<DateTimeOffset>(x => x == _input2),
                     It.IsAny<CancellationToken>()), 
@@ -70,17 +67,12 @@ namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.G
         public void Ok_Is_Returned()
         {
             Assert.That(_result, Is.InstanceOf<OkObjectResult>());
-
-            Assert.That(_result, Is.InstanceOf<OkObjectResult>()
-                .With.Property(nameof(OkObjectResult.Value))
-                .WithPropEqual("totalProcessed", 2));
-            Assert.That(_result, Is.InstanceOf<OkObjectResult>()
-                .With.Property(nameof(OkObjectResult.Value))
-                .With.Property("data").With.One.Items.WithPropEqual("processed", 2));
+            Assert.That(((OkObjectResult)_result).Value, Is.EqualTo(_expected));
         }
 
         private static async IAsyncEnumerable<DateTimeOffset> AsAsyncEnumerable(IEnumerable<DateTimeOffset> dates)
         {
+            await Task.CompletedTask;
             foreach (var date in dates)
             {
                 yield return date;

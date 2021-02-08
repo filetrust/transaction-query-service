@@ -13,7 +13,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
     [TestFixture]
     public class WhenAnalysisReportFileIsFound : TransactionServiceTestBase
     {
-        private GetDetailResponseV1 _output;
+        private TransactionDetail _output;
         private MemoryStream _memoryStream;
         private GWallInfo _analysisReportDeserialised;
         private const string Input = "some/file/path";
