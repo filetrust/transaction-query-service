@@ -13,6 +13,7 @@ using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Serialisation;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
 using Microsoft.Extensions.Logging;
+using EventId = Glasswall.Administration.K8.TransactionQueryService.Common.Enums.EventId;
 
 namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
 {
@@ -35,14 +36,14 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
             _xmlSerialiser = xmlSerialiser ?? throw new ArgumentNullException(nameof(xmlSerialiser));
         }
 
-        public Task<GetTransactionsResponseV1> GetTransactionsAsync(GetTransactionsRequestV1 request, CancellationToken cancellationToken)
+        public Task<Transactions> GetTransactionsAsync(GetTransactionsRequestV1 request, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
             return InternalGetTransactionsAsync(request, cancellationToken);
         }
 
-        public Task<GetDetailResponseV1> GetDetailAsync(string fileDirectory, CancellationToken cancellationToken)
+        public Task<TransactionDetail> GetDetailAsync(string fileDirectory, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(fileDirectory))
                 throw new ArgumentException("Value must not be null or whitespace", nameof(fileDirectory));
@@ -50,35 +51,67 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
             return InternalTryGetDetailAsync(fileDirectory, cancellationToken);
         }
 
-        public async IAsyncEnumerable<DateTimeOffset> GetHourTimestampsOfFiles(DateTimeOffset fromDate, DateTimeOffset toDate, [EnumeratorCancellation]CancellationToken cancellationToken)
+        public async Task<TransactionAnalytics> GetTransactionAnalyticsAsync(DateTimeOffset fromDate, DateTimeOffset toDate, CancellationToken cancellationToken)
         {
-            foreach (var fileStore in _fileStores.AsParallel())
+            var response = new TransactionAnalytics();
+            var analytics = new ConcurrentDictionary<DateTimeOffset, AnalyticalHour>();
+
+            await foreach (var (transactionFile, _) in GetEachTransactionAndPath(fromDate, toDate, cancellationToken))
             {
-                await foreach (var fileDirectory in fileStore.ListAsync(new DatePathFilter(new FileStoreFilterV1 { TimestampRangeStart = fromDate, TimestampRangeEnd = toDate }), cancellationToken))
-                {
-                    if (!TryParseHourlyDateFromPath(fileDirectory.Replace(MountingInfo.MountLocation, ""), out var dateExcludingTime))
-                        continue;
+                transactionFile.TryGetEvent(EventId.NewDocument, out var newDocumentEvent);
+                transactionFile.TryGetEvent(EventId.RebuildCompleted, out var rebuildCompleted);
+                transactionFile.TryGetEvent(EventId.NcfsCompletedEvent, out var ncfsEvent);
+                
+                if (!DateTimeOffset.TryParse(newDocumentEvent?.PropertyOrDefault("Timestamp"), out var timestamp)) continue;
+                var hourTimestamp = new DateTimeOffset(new DateTime(timestamp.Year, timestamp.Month, timestamp.Day, timestamp.Hour, 0, 0));
+                var gwOutcome = rebuildCompleted.PropertyOrDefault<GwOutcome>("GwOutcome");
+                var ncfsOutcome = ncfsEvent.PropertyOrDefault<NcfsOutcome>("NCFSOutcome");
 
-                    yield return dateExcludingTime;
-                }
+                analytics.AddOrUpdate(hourTimestamp,
+                    new AnalyticalHour
+                    {
+                        Date = hourTimestamp,
+                        Processed =  1, // gwOutcome == null && ncfsOutcome == null ? 0 : 1,
+                        // Pending = gwOutcome == null && ncfsOutcome == null ? 1 : 0,
+                        SentToNcfs = ncfsOutcome != null ? 1 : 0,
+                        ProcessedByNcfs = new Dictionary<string, long>
+                        {
+                            [NcfsOutcome.Blocked.ToString()] = ncfsOutcome == NcfsOutcome.Blocked ? 1 : 0,
+                            [NcfsOutcome.Relayed.ToString()] = ncfsOutcome == NcfsOutcome.Relayed ? 1 : 0,
+                            [NcfsOutcome.Replaced.ToString()] = ncfsOutcome == NcfsOutcome.Replaced ? 1 : 0,
+                        },
+                        ProcessedByOutcome = new Dictionary<string, long>
+                        {
+                            [GwOutcome.Failed.ToString()] = gwOutcome == GwOutcome.Failed ? 1 : 0,
+                            [GwOutcome.Replace.ToString()] = gwOutcome == GwOutcome.Replace ? 1 : 0,
+                            [GwOutcome.Unmodified.ToString()] = gwOutcome == GwOutcome.Unmodified ? 1 : 0,
+                        }
+                    },
+                    (key, val) =>
+                    {
+                        if (gwOutcome != null) val.ProcessedByOutcome[gwOutcome.Value.ToString()] += 1;
+                        
+                        if (ncfsOutcome != null)
+                        {
+                            val.ProcessedByNcfs[ncfsOutcome.Value.ToString()] += 1;
+                            val.SentToNcfs += 1;
+                        }
+                        
+                        //if (gwOutcome == null && ncfsOutcome == null)
+                        //    val.Pending += 1;
+                        // else
+                        
+                        val.Processed += 1;
+                        return val;
+                    });
             }
+
+            response.TotalProcessed = analytics.Sum(f => f.Value.Processed);
+            response.Data = analytics.Select(f => f.Value).OrderBy(f => f.Date).ToArray();
+            return response;
         }
 
-        private static bool TryParseHourlyDateFromPath(string path, out DateTimeOffset parsed)
-        {
-            var pathSplit = path.Split('/');
-            parsed = DateTimeOffset.MaxValue;
-
-            if (!int.TryParse(pathSplit[1], out var parsedYear)) return false;
-            if (!int.TryParse(pathSplit[2], out var parsedMonth)) return false;
-            if (!int.TryParse(pathSplit[3], out var parsedDay)) return false;
-            if (!int.TryParse(pathSplit[4], out var parsedHour)) return false;
-
-            parsed = new DateTimeOffset(new DateTime(parsedYear, parsedMonth, parsedDay, parsedHour, 0, 0));
-            return true;
-        }
-
-        private async Task<GetDetailResponseV1> InternalTryGetDetailAsync(string fileDirectory, CancellationToken cancellationToken)
+        private async Task<TransactionDetail> InternalTryGetDetailAsync(string fileDirectory, CancellationToken cancellationToken)
         {
             GWallInfo analysisReport = null;
             var status = DetailStatus.FileNotFound;
@@ -103,67 +136,32 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                 }
             }
 
-            return new GetDetailResponseV1
+            return new TransactionDetail
             {
                 Status = status,
                 AnalysisReport = analysisReport
             };
         }
 
-        private async Task<GetTransactionsResponseV1> InternalGetTransactionsAsync(
+        private async Task<Transactions> InternalGetTransactionsAsync(
             GetTransactionsRequestV1 request,
             CancellationToken cancellationToken)
         {
             _logger.LogInformation("Searching file store ");
 
-            var items = new List<GetTransactionsResponseV1File>();
+            var items = new List<TransactionFile>();
 
-            foreach (var share in _fileStores.AsParallel())
+            await foreach (var (transactionFile, fileDirectory) in GetEachTransactionAndPath(request.Filter.TimestampRangeStart, request.Filter.TimestampRangeEnd, cancellationToken))
             {
-                await foreach (var item in HandleShare(share, request.Filter, cancellationToken))
-                {
-                    items.Add(item);
-                }
-            }
+                if (request.Filter.AllFileIdsFound) break;
 
-            return new GetTransactionsResponseV1
-            {
-                Files = items
-            };
-        }
+                if (!transactionFile.TryParseEventDateWithFilter(request.Filter, out var timestamp)) continue;
+                if (!transactionFile.TryParseFileIdWithFilter(request.Filter, out var fileId)) continue;
+                if (!transactionFile.TryParseFileTypeWithFilter(request.Filter, out var fileType)) continue;
+                if (!transactionFile.TryParseRiskWithFilter(request.Filter, out var risk)) continue;
+                if (!transactionFile.TryParsePolicyIdWithFilter(request.Filter, out var policyId)) continue;
 
-        private async IAsyncEnumerable<GetTransactionsResponseV1File> HandleShare(
-            IFileStore store,
-            FileStoreFilterV1 filter,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var fileDirectory in store.ListAsync(new DatePathFilter(filter), cancellationToken))
-            {
-                if (filter.AllFileIdsFound) yield break;
-
-                var successAndResponse = await TryGetTransactionsResponseV1File(store, filter, fileDirectory, cancellationToken);
-
-                if (successAndResponse.Item1)
-                    yield return successAndResponse.Item2;
-            }
-        }
-
-        private async Task<(bool, GetTransactionsResponseV1File)> TryGetTransactionsResponseV1File(IFileStore store, FileStoreFilterV1 filter, string fileDirectory, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var eventFile = await DownloadFile(store, fileDirectory, cancellationToken);
-
-                if (eventFile == null)
-                    throw new Exception("Unable to download metadata.json");
-
-                if (!eventFile.TryParseEventDateWithFilter(filter, out var timestamp)) return (false, null);
-                if (!eventFile.TryParseFileIdWithFilter(filter, out var fileId)) return (false, null);
-                if (!eventFile.TryParseFileTypeWithFilter(filter, out var fileType)) return (false, null); 
-                if (!eventFile.TryParseRiskWithFilter(filter, out var risk)) return (false, null); 
-                if (!eventFile.TryParsePolicyIdWithFilter(filter, out var policyId)) return (false, null);
-
-                return (true, new GetTransactionsResponseV1File
+                items.Add(new TransactionFile
                 {
                     ActivePolicyId = policyId,
                     DetectionFileType = fileType,
@@ -173,18 +171,43 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                     Directory = fileDirectory
                 });
             }
+
+            return new Transactions
+            {
+                Files = items
+            };
+        }
+
+        private async IAsyncEnumerable<(TransactionAdapationEventMetadataFile, string)> GetEachTransactionAndPath(DateTimeOffset? dateStart, DateTimeOffset? dateEnd, [EnumeratorCancellation]CancellationToken cancellationToken)
+        {
+            foreach (var store in _fileStores.AsParallel())
+            {
+                await foreach (var fileDirectory in store.ListAsync(new DatePathFilter(dateStart, dateEnd), cancellationToken))
+                {
+                    var (couldRead, file) = await TryReadTransactionEventFile(store, fileDirectory, cancellationToken);
+
+                    if (couldRead) yield return (file, fileDirectory);
+                }
+            }
+        }
+        
+        private async Task<(bool, TransactionAdapationEventMetadataFile)> TryReadTransactionEventFile(IFileStore store, string fileDirectory, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var ms = await store.DownloadAsync($"{fileDirectory}/metadata.json", cancellationToken);
+                var eventFile = await _jsonSerialiser.Deserialize<TransactionAdapationEventMetadataFile>(ms, Encoding.UTF8);
+
+                if (eventFile == null) throw new Exception($"{fileDirectory} - file could not be read.");
+
+                return (true, eventFile);
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"{fileDirectory} - Exception raised", ex);
             }
 
             return (false, null);
-        }
-
-        private async Task<TransactionAdapationEventMetadataFile> DownloadFile(IFileStore store, string fileDirectory, CancellationToken cancellationToken)
-        {
-            using var ms = await store.DownloadAsync($"{fileDirectory}/metadata.json", cancellationToken);
-            return await _jsonSerialiser.Deserialize<TransactionAdapationEventMetadataFile>(ms, Encoding.UTF8);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
     [TestFixture]
     public class WhenFileDoesNotExist : TransactionServiceTestBase
     {
-        private GetDetailResponseV1 _output;
+        private TransactionDetail _output;
         private const string Input = "some/file/path";
 
 

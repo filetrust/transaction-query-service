@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
@@ -57,18 +58,11 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Controllers
         {
             _logger.LogInformation("Beginning get metrics request");
 
-            var dateLookupDict = new ConcurrentDictionary<DateTimeOffset, int>();
-
-            await foreach (var date in _transactionService.GetHourTimestampsOfFiles(fromDate, toDate, cancellationToken))
-                dateLookupDict.AddOrUpdate(date, 1, (d, c) => c+1);
-
+            var analytics = await _transactionService.GetTransactionAnalyticsAsync(fromDate, toDate, cancellationToken);
+            
             _logger.LogInformation("Finished get metrics request");
 
-            return Ok(new
-            {
-                totalProcessed = dateLookupDict.Sum(f => f.Value),
-                data = dateLookupDict.Select(s => new { date = s.Key, processed = s.Value }).OrderBy(f => f.date)
-            });
+            return Ok(analytics);
         }
     }
 }

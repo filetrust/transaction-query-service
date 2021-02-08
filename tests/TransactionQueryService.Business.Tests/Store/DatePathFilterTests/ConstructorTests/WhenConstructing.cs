@@ -10,42 +10,29 @@ namespace TransactionQueryService.Business.Tests.Store.DatePathFilterTests.Const
     public class WhenConstructing : UnitTestBase<DatePathFilter>
     {
         [Test]
-        public void Constructor_Is_Guarded_Against_Null()
-        {
-            ConstructorAssertions.ClassIsGuardedAgainstNull<DatePathFilter>();
-        }
-
-        [Test]
         public void Constructor_Constructs_With_Mocked_Parameters()
         {
             Assert.That(() => new DatePathFilter(
-                new FileStoreFilterV1
-                {
-                    TimestampRangeStart = DateTimeOffset.MinValue,
-                    TimestampRangeEnd = DateTimeOffset.MaxValue
-                }), Throws.Nothing);
+                    DateTimeOffset.MinValue,
+                    DateTimeOffset.MaxValue
+                ), Throws.Nothing);
         }
 
         [Test]
         public void Constructor_Throws_With_Null_Start()
         {
             Assert.That(() => new DatePathFilter(
-                new FileStoreFilterV1
-                {
-                    TimestampRangeStart = null,
-                    TimestampRangeEnd = DateTimeOffset.MaxValue
-                }), ThrowsArgumentException("filter", "Start was null"));
+                    null,
+                    DateTimeOffset.MaxValue), ThrowsArgumentNullException("start"));
         }
 
         [Test]
         public void Constructor_Throws_With_Null_End()
         {
             Assert.That(() => new DatePathFilter(
-                new FileStoreFilterV1
-                {
-                    TimestampRangeStart = DateTimeOffset.MinValue,
-                    TimestampRangeEnd = null
-                }), ThrowsArgumentException("filter", "End was null"));
+                    DateTimeOffset.MinValue,
+                    null
+                ), ThrowsArgumentNullException("end"));
         }
     }
 }

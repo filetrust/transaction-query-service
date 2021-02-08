@@ -18,7 +18,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
     {
         private GetTransactionsRequestV1 _input;
         private IAsyncEnumerable<string> _paths1;
-        private GetTransactionsResponseV1 _output;
+        private Transactions _output;
         private TransactionAdapationEventMetadataFile _expectedMetadata;
 
         [OneTimeSetUp]

@@ -14,7 +14,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
     public class WhenNoStoresReturnData : TransactionServiceTestBase
     {
         private GetTransactionsRequestV1 _input;
-        private GetTransactionsResponseV1 _output;
+        private Transactions _output;
 
         [OneTimeSetUp]
         public async Task Setup()
