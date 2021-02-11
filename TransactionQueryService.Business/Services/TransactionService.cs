@@ -65,7 +65,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                 if (!DateTimeOffset.TryParse(newDocumentEvent?.PropertyOrDefault("Timestamp"), out var timestamp)) continue;
                 var hourTimestamp = new DateTimeOffset(new DateTime(timestamp.Year, timestamp.Month, timestamp.Day, timestamp.Hour, 0, 0));
                 var gwOutcome = rebuildCompleted.PropertyOrDefault<GwOutcome>("GwOutcome");
-                var ncfsOutcome = ncfsEvent.PropertyOrDefault<NcfsOutcome>("NCFSOutcome");
+                var ncfsOutcome = ncfsEvent.PropertyOrDefault("NCFSOutcome");
 
                 analytics.AddOrUpdate(hourTimestamp,
                     new AnalyticalHour
@@ -74,11 +74,9 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                         Processed =  1, // gwOutcome == null && ncfsOutcome == null ? 0 : 1,
                         // Pending = gwOutcome == null && ncfsOutcome == null ? 1 : 0,
                         SentToNcfs = ncfsOutcome != null ? 1 : 0,
-                        ProcessedByNcfs = new Dictionary<string, long>
+                        ProcessedByNcfs = ncfsOutcome == null ? new Dictionary<string, long>() : new Dictionary<string, long>
                         {
-                            [NcfsOutcome.Blocked.ToString()] = ncfsOutcome == NcfsOutcome.Blocked ? 1 : 0,
-                            [NcfsOutcome.Relayed.ToString()] = ncfsOutcome == NcfsOutcome.Relayed ? 1 : 0,
-                            [NcfsOutcome.Replaced.ToString()] = ncfsOutcome == NcfsOutcome.Replaced ? 1 : 0,
+                            [ncfsOutcome] = 1
                         },
                         ProcessedByOutcome = new Dictionary<string, long>
                         {
@@ -93,7 +91,11 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                         
                         if (ncfsOutcome != null)
                         {
-                            val.ProcessedByNcfs[ncfsOutcome.Value.ToString()] += 1;
+                            if (!val.ProcessedByNcfs.ContainsKey(ncfsOutcome))
+                                val.ProcessedByNcfs.Add(ncfsOutcome, 1);
+                            else
+                                val.ProcessedByNcfs[ncfsOutcome] += 1;
+
                             val.SentToNcfs += 1;
                         }
                         
