@@ -9,13 +9,13 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Enums
             Risk risk;
             switch (ncfsOutcome)
             {
-                case NcfsOutcome.Relayed:
+                case NcfsOutcome.Relay:
                     risk = Risk.AllowedByNCFS;
                     break;
-                case NcfsOutcome.Replaced:
+                case NcfsOutcome.Replace:
                     risk = Risk.Safe;
                     break;
-                case NcfsOutcome.Blocked:
+                case NcfsOutcome.Block:
                     risk = Risk.BlockedByNCFS;
                     break;
                 default:

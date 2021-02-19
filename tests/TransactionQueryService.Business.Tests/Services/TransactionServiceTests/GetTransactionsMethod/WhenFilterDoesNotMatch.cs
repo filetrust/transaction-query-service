@@ -52,7 +52,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(_fileId),
                         TransactionAdaptionEventModel.FileTypeDetectedEvent(FileType.Bmp, _fileId),
-                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Blocked, _fileId),
+                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Block, _fileId),
                         TransactionAdaptionEventModel.NcfsStartedEvent(_fileId),
                         TransactionAdaptionEventModel.NewDocumentEvent(fileId: _fileId),
                         TransactionAdaptionEventModel.RebuildCompletedEvent(GwOutcome.Failed, _fileId),
@@ -74,7 +74,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(_fileId),
                         TransactionAdaptionEventModel.FileTypeDetectedEvent(FileType.Bmp, _fileId),
-                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Blocked, _fileId),
+                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Block, _fileId),
                         TransactionAdaptionEventModel.NcfsStartedEvent(_fileId),
                         badEvent,
                         TransactionAdaptionEventModel.RebuildCompletedEvent(GwOutcome.Failed, _fileId),
@@ -104,7 +104,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(_fileId),
                         badEvent,
-                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Blocked, _fileId),
+                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Block, _fileId),
                         TransactionAdaptionEventModel.NcfsStartedEvent(_fileId),
                         TransactionAdaptionEventModel.NewDocumentEvent(),
                         TransactionAdaptionEventModel.RebuildCompletedEvent(GwOutcome.Failed, _fileId),
@@ -129,7 +129,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(_fileId),
                         badEvent,
-                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Blocked, _fileId),
+                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Block, _fileId),
                         TransactionAdaptionEventModel.NcfsStartedEvent(_fileId),
                         TransactionAdaptionEventModel.NewDocumentEvent(),
                         TransactionAdaptionEventModel.RebuildCompletedEvent(GwOutcome.Failed, _fileId),
