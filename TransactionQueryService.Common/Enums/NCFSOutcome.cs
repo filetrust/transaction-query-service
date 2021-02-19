@@ -3,8 +3,8 @@
     public enum NcfsOutcome
     {
         Unknown = -1,
-        Relayed,
-        Replaced,
-        Blocked
+        Relay,
+        Replace,
+        Block
     }
 }

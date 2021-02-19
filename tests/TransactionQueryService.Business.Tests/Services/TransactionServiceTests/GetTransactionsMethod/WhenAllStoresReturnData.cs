@@ -55,7 +55,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
                     {
                         TransactionAdaptionEventModel.AnalysisCompletedEvent(fileId),
                         TransactionAdaptionEventModel.FileTypeDetectedEvent(FileType.Bmp, fileId),
-                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Blocked, fileId),
+                        TransactionAdaptionEventModel.NcfsCompletedEvent(NcfsOutcome.Block, fileId),
                         TransactionAdaptionEventModel.NcfsStartedEvent(fileId),
                         TransactionAdaptionEventModel.NewDocumentEvent(fileId),
                         TransactionAdaptionEventModel.RebuildCompletedEvent(GwOutcome.Failed, fileId),

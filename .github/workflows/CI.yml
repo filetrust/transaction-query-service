@@ -58,18 +58,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.ICAPGITHUBTOKEN }}
         
-  merge-to-main:
-    runs-on: ubuntu-latest
-    needs: [build-push-docker-image]
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@master
-      - name: Merge to main branch 🔃
-        uses: devmasx/merge-branch@v1.1.0
-        with:
-          type: now
-          target_branch: main
-        env:
-          GITHUB_TOKEN: ${{secrets.TOKEN_GITHUB}}  
-          
 
