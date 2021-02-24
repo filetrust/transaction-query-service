@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models.Metrics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using TestCommon;
 
 namespace TransactionQueryService.Tests.Controllers.TransactionControllerTests.GetMetricsMethod
 {
