@@ -79,11 +79,15 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Store
         {
             TryGetEvent(EventId.RebuildCompleted, out var rebuildEvent);
             TryGetEvent(EventId.NcfsCompletedEvent, out var ncfsEvent);
+            TryGetEvent(EventId.UnmanagedFiletypeAction, out var unmanagedEvent);
+            TryGetEvent(EventId.BlockedFileTypeAction, out var blockedEvent);
 
-            var gwOutcome = rebuildEvent.PropertyOrDefault<GwOutcome>("GwOutcome") ?? GwOutcome.Unknown;
             var ncfsOutcome = ncfsEvent.PropertyOrDefault<NcfsOutcome>("NCFSOutcome") ?? NcfsOutcome.Unknown;
+            var gwOutcome = rebuildEvent.PropertyOrDefault<GwOutcome>("GwOutcome") ?? GwOutcome.Unknown;
+            var unmanagedOutcome = unmanagedEvent.PropertyOrDefault<GwOutcome>("Action") ?? GwOutcome.Unknown;
+            var blockedOutcome = blockedEvent.PropertyOrDefault<GwOutcome>("Action") ?? GwOutcome.Unknown;
 
-            risk = RiskAssessment.DetermineRisk(ncfsOutcome, gwOutcome);
+            risk = RiskAssessment.DetermineRisk(ncfsOutcome, gwOutcome, unmanagedOutcome, blockedOutcome);
 
             if (filter.SearchRisk) return filter.Risks.Contains(risk);
 
