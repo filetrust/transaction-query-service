@@ -8,7 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Store;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Enums;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.AnalysisReport;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models.Metrics;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Models.V1;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Serialisation;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
@@ -61,51 +63,18 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
                 transactionFile.TryGetEvent(EventId.NewDocument, out var newDocumentEvent);
                 transactionFile.TryGetEvent(EventId.RebuildCompleted, out var rebuildCompleted);
                 transactionFile.TryGetEvent(EventId.NcfsCompletedEvent, out var ncfsEvent);
-                
+                transactionFile.TryGetEvent(EventId.UnmanagedFiletypeAction, out var unmanagedFiletypeAction);
+                transactionFile.TryGetEvent(EventId.BlockedFileTypeAction, out var blockedFileTypeAction);
+
                 if (!DateTimeOffset.TryParse(newDocumentEvent?.PropertyOrDefault("Timestamp"), out var timestamp)) continue;
                 var hourTimestamp = new DateTimeOffset(new DateTime(timestamp.Year, timestamp.Month, timestamp.Day, timestamp.Hour, 0, 0));
-                var gwOutcome = rebuildCompleted.PropertyOrDefault<GwOutcome>("GwOutcome");
+                var gwOutcome = rebuildCompleted.PropertyOrDefault("GwOutcome");
                 var ncfsOutcome = ncfsEvent.PropertyOrDefault("NCFSOutcome");
+                var unmanagedFileTypeActionFlag = unmanagedFiletypeAction.PropertyOrDefault("Action");
+                var blockedFileTypeActionFlag = blockedFileTypeAction.PropertyOrDefault("Action");
 
-                analytics.AddOrUpdate(hourTimestamp,
-                    new AnalyticalHour
-                    {
-                        Date = hourTimestamp,
-                        Processed =  1, // gwOutcome == null && ncfsOutcome == null ? 0 : 1,
-                        // Pending = gwOutcome == null && ncfsOutcome == null ? 1 : 0,
-                        SentToNcfs = ncfsOutcome != null ? 1 : 0,
-                        ProcessedByNcfs = ncfsOutcome == null ? new Dictionary<string, long>() : new Dictionary<string, long>
-                        {
-                            [ncfsOutcome] = 1
-                        },
-                        ProcessedByOutcome = new Dictionary<string, long>
-                        {
-                            [GwOutcome.Failed.ToString()] = gwOutcome == GwOutcome.Failed ? 1 : 0,
-                            [GwOutcome.Replace.ToString()] = gwOutcome == GwOutcome.Replace ? 1 : 0,
-                            [GwOutcome.Unmodified.ToString()] = gwOutcome == GwOutcome.Unmodified ? 1 : 0,
-                        }
-                    },
-                    (key, val) =>
-                    {
-                        if (gwOutcome != null) val.ProcessedByOutcome[gwOutcome.Value.ToString()] += 1;
-                        
-                        if (ncfsOutcome != null)
-                        {
-                            if (!val.ProcessedByNcfs.ContainsKey(ncfsOutcome))
-                                val.ProcessedByNcfs.Add(ncfsOutcome, 1);
-                            else
-                                val.ProcessedByNcfs[ncfsOutcome] += 1;
-
-                            val.SentToNcfs += 1;
-                        }
-                        
-                        //if (gwOutcome == null && ncfsOutcome == null)
-                        //    val.Pending += 1;
-                        // else
-                        
-                        val.Processed += 1;
-                        return val;
-                    });
+                analytics.AddOrUpdate(hourTimestamp, AnalyticalHour.Initial(hourTimestamp, gwOutcome, ncfsOutcome, unmanagedFileTypeActionFlag, blockedFileTypeActionFlag),
+                    (key, val) => { val.Update(gwOutcome, ncfsOutcome, unmanagedFileTypeActionFlag, blockedFileTypeActionFlag); return val; });
             }
 
             response.TotalProcessed = analytics.Sum(f => f.Value.Processed);
@@ -206,7 +175,7 @@ namespace Glasswall.Administration.K8.TransactionQueryService.Business.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{fileDirectory} - Exception raised", ex);
+                _logger.LogError(0, ex, $"{fileDirectory} - Exception raised");
             }
 
             return (false, null);

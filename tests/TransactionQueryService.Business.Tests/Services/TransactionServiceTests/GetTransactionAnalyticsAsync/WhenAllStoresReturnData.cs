@@ -7,7 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Glasswall.Administration.K8.TransactionQueryService.Business.Store;
 using Glasswall.Administration.K8.TransactionQueryService.Common.Enums;
-using Glasswall.Administration.K8.TransactionQueryService.Common.Services;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models;
+using Glasswall.Administration.K8.TransactionQueryService.Common.Models.Metrics;
 using Moq;
 using NUnit.Framework;
 
@@ -63,7 +64,7 @@ namespace TransactionQueryService.Business.Tests.Services.TransactionServiceTest
         }
         
         [Test]
-        public async Task Correct_Response_Is_Returned()
+        public void Correct_Response_Is_Returned()
         {
             Assert.That(_output.TotalProcessed, Is.EqualTo(10));
             Assert.That(_output.Data, Has.One.Items);
