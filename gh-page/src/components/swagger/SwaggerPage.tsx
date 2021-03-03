@@ -7,13 +7,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 let yam = require("./api.yaml");
 
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0"
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
 const SwaggerPage = () => {
     return (
         <>
             <TopBar />
-            <SwaggerUI url={window.location.origin + yam}
+            <SwaggerUI url={window.location.origin + yam.default}
                 docExpansion="list"
                 defaultModelExpandDepth={1} />
             <ToastContainer />
